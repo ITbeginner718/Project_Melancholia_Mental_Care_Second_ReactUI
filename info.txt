@@ -1,0 +1,46 @@
+javascript+ typescript 혼용 방법 
+
+cmd 명령어
+npm install typescrpt --save-dev
+npx tsc --init
+
+
+tsconfig.json 수정 
+
+
+"jsx": "react-jsx",
+
+"include": ["src", "**/*.tsx"],
+ 
+ 해당 명령어 추가 
+
+
+ gpt api 사용
+
+ 명령어
+ npm install openai
+
+ axios 설치
+
+
+======================================================
+https: 사용법 
+
+모듈 설치 
+npm install vite-plugin-mkcert
+
+
+vite.confing.ts 설정 
+
+  plugins: [
+    react(), 
+    mkcert(),
+  ],
+
+    server:{
+    https: {
+      // 인증서와 키 파일을 지정하는 객체
+      key: './.cert/key.pem',
+      cert: './.cert/cert.pem', 
+    },
+  },

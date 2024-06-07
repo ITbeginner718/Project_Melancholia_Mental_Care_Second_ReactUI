@@ -1,0 +1,12 @@
+//firebase-messaging-sw.js
+
+//sdk 초기화
+firebase.initializeApp( {
+    // api 키
+    apiKey: "AIzaSyD4Qljh30XJkxActLd6BRDoyqq4YgN8tUU",
+    authDomain: "project-mentalcare.firebaseapp.com",
+    projectId: "project-mentalcare",
+    storageBucket: "project-mentalcare.appspot.com",
+    messagingSenderId: "349157902137",
+    appId: "1:349157902137:web:053cf3b51f32885fc48ae8"
+  });

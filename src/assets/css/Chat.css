@@ -1,0 +1,88 @@
+/* Chat.css */
+
+.App {
+    text-align: left; /* 모든 텍스트를 중앙 정렬 */
+    margin-top: 20px; /* 상단 여백 추가 */
+    font-family: Arial, sans-serif; /* 폰트 스타일 지정 */
+  }
+  
+  .App h1 {
+    color: #4A90E2; /* 제목의 색상 변경 */
+    margin-bottom: 20px; /* 제목 아래 여백 추가 */
+    text-align: center; /* 모든 텍스트를 중앙 정렬 */
+  }
+
+.chat-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .message-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: 600px;
+    overflow-y: scroll;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+  }
+  
+  .message {
+    padding: 8px 16px;
+    margin: 4px;
+    border-radius: 12px;
+    background-color: #e0e0e0;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+  
+  .message.sent {
+    background-color: #dcf8c6; /* Light green background for sent messages */
+    margin-left: auto; /* Align to the right */
+    border-radius: 12px 12px 0 12px;
+    color:black;
+  }
+  
+  .message.received {
+    background-color: #ffffff; /* White background for received messages */
+    border-radius: 12px 12px 12px 0;
+    color:black;
+  }
+  
+  .send-form {
+    display: flex;
+    padding-top: 10px;
+  }
+  
+  .send-form input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 12px 0 0 12px;
+    margin-right: -1px; /* Align borders of input and button */
+  }
+  
+  .send-form button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 0 12px 12px 0;
+    cursor: pointer;
+  }
+
+  .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 4px; /* 메시지와 프로필 사진 간의 간격 조정 */
+  }
+
+.message.received .profile-pic,
+.message.sent .profile-pic {
+  align-self: center; /* 프로필 사진을 중앙 정렬 */
+}

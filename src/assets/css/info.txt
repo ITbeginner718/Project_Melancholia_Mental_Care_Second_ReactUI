@@ -1,0 +1,101 @@
+/* Chat.css 수정 */
+.chat-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.message-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-height: 300px; /* 최소 높이를 설정 */
+  height: 70vh; /* 뷰포트 높이의 70%로 설정 */
+  max-height: 80vh; /* 최대 높이를 화면 높이의 80%로 설정 */
+  overflow-y: scroll;
+  /*background-color: white;*/
+  background-image: url('../image/back7.png');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid #ddd;
+}
+
+
+.message {
+  padding: 0; /* 메시지의 패딩 제거 */
+  margin: 4px;
+  max-width: 80%;
+  word-wrap: break-word;
+  display: flex;
+  justify-content: flex-end; /* 보낸 메시지를 오른쪽 정렬 */
+}
+
+.message.sent {
+  margin-left: auto; /* Align to the right */
+}
+
+.message.received {
+  justify-content: flex-start; /* 받은 메시지를 왼쪽 정렬 */
+}
+
+.message-content {
+  padding: 8px 16px;
+  border-radius: 12px;
+}
+
+.received .message-content {
+  background-color: #f0f0f0; /* 받은 메시지의 배경색 */
+}
+
+.sent .message-content {
+  background-color: #fbe503; /* 보낸 메시지의 배경색 */
+}
+
+.profile-pic {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.send-form {
+  display: flex;
+  padding-top: 10px;
+}
+
+.send-form input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 12px 0 0 12px;
+  margin-right: -1px; /* Align borders of input and button */
+}
+
+.send-form button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 0 12px 12px 0;
+  cursor: pointer;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 4px; /* 메시지와 프로필 사진 간의 간격 조정 */
+}
+
+.message.received .profile-pic,
+.message.sent .profile-pic {
+  align-self: center; /* 프로필 사진을 중앙 정렬 */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #F2F2F2;
+}
