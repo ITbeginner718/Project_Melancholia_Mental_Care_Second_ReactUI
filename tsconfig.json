@@ -6,12 +6,18 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "baseUrl": "./src" /* Specify the base directory to resolve non-relative module names. */,
+
+    "baseUrl": "." /* Specify the base directory to resolve non-relative module names. */,
     // 절대 경로 설정
     "paths":{
-      "components/*": ["src/components/*"],
+      "@components/*": ["src/components/*"],
       "@/*": ["src/*"],
     },
+
+    //계속 빨간줄이 뜬 이유는 baseUrl를 "src"로 설정해놓았기때문에
+    //@component: src/src/components/* 로 경로가 설정됨
+    //루트( . ) 경로를 기준으로 path설정
+    //@component:./src/components/*
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -31,6 +37,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "**/*.ts", "**/*.tsx","**/*.jsx"],
+  // "include": ["src", "**/*.ts", "**/*.tsx","**/*.jsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx","src/**/*.jsx","src/**/*.js","**/*.ts", "**/*.tsx","**/*.jsx" ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

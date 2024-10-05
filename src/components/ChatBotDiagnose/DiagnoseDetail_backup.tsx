@@ -6,7 +6,7 @@ import {  useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useEffect, useState } from "react";
-import useDidMountEffect from "@components/hooks/useDidMountEffect";
+
 
 export interface DiagnoseRequestResponse {
     request: string;
@@ -46,29 +46,8 @@ export default function DiagnoseDetail() {
     //진단 검사 정보(텍스트)
     const [diagnoseResultText, setDiagnoseResultText] = useState("");
 
-    
-
-    useDidMountEffect(()=>{
-        console.log("diagnoseObject 렌더링");
-        console.log(diagnoseObject);
-
-        if (typeof diagnoseObject?.diagnoseDate === "string") {
-            setDate(diagnoseObject.diagnoseDate);
-        }
-    
-        if (typeof diagnoseObject?.questionResponseData === "string") {
-            setQuestionResponse(diagnoseObject.questionResponseData);
-        }
-    
-        if (typeof diagnoseObject?.resultScore === "string") {
-            setDiagnoseResultScore(diagnoseObject.resultScore);
-        }
-    
-        if (typeof diagnoseObject?.resultText === "string") {
-            setDiagnoseResultText(diagnoseObject.resultText);
-        }
-
-    },[diagnoseObject])
+    // 카운트
+    const [count, setCount] = useState(0);
 
     useEffect(() => {
 
@@ -76,6 +55,8 @@ export default function DiagnoseDetail() {
         // 이거 다시 공부해야 함+++++++++++++++++++++++++++++++++++++++++
         // 질의-응답 데이터를 parsing하는 과정에서 비동기로 인하여 먼저 데이터를 parsing하기도 전에 렌더링이 되다 보니깐 
         // 페이지 결과값이 로드가 안됨
+        if (count >= 2)
+            return;
 
         // 특정 문서 ID를 이용하여 데이터를 가져오는 비동기 함수
         const getDocumentData = async () => {
@@ -101,8 +82,25 @@ export default function DiagnoseDetail() {
                             return { resultText, resultScore, questionResponseData, diagnoseDate, id: docSnap.id, }
                         }
 
-                        // 진단 객체 정보 저장
+                        // 진단 객체 설정
                         setDiagnoseObject(diagnoseObjectData);
+                        console.log(diagnoseObject);
+
+                        if (typeof diagnoseObject?.diagnoseDate === "string") {
+                            setDate(diagnoseObject.diagnoseDate);
+                        }
+
+                        if (typeof diagnoseObject?.questionResponseData === "string") {
+                            setQuestionResponse(diagnoseObject.questionResponseData);
+                        }
+
+                        if (typeof diagnoseObject?.resultScore === "string") {
+                            setDiagnoseResultScore(diagnoseObject.resultScore);
+                        }
+
+                        if (typeof diagnoseObject?.resultText === "string") {
+                            setDiagnoseResultText(diagnoseObject.resultText);
+                        }
                     }
                 }
                 catch (error) {
@@ -110,6 +108,7 @@ export default function DiagnoseDetail() {
                 }
 
                 finally {
+                    setCount((current) => (current + 1));
                 }
 
             }
@@ -124,7 +123,7 @@ export default function DiagnoseDetail() {
         // 아무것도 안보이게 됨 그래서 데이터를 다 불러올 때까지 계속적으로 
         // 컴포넌트를 재렌더링 해줘야 함 
         // diagnoseObject?.questionResponseData
-    }, [])
+    }, [count])
 
     useEffect(() => {
 

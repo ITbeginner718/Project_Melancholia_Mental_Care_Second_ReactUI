@@ -62,7 +62,7 @@ export default function ChatbotFeedbackList({ ChatbotDate,feedbackData, feedback
         <>
             <tr >
             <Link to={''}><td onClick={onClickFeedback}>{ChatbotDate} </td></Link>
-             <td> {feedbackData.length > 7 ? `${feedbackData.substring(0, 7)}...` : feedbackData} </td>
+             <td onClick={onClickFeedback}> {feedbackData.length > 7 ? `${feedbackData.substring(0, 7)}...` : feedbackData} </td>
             
              <td>
                         {/* 본인만 작성한 트윗만이 삭제버튼이 보일 수 있도록 설정 */}

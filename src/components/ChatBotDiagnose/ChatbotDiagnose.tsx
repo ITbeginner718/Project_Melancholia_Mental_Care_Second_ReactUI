@@ -53,12 +53,19 @@ export default function Chatbot() {
     const [modal, setModal] = useState(false);
 
 
-
     // 컴포넌트가 마운트될 때 한 번만 실행되며, "시작" 메시지를 서버에 보냅니다.
     useEffect(() => {
-        // 진단 검사 통신 
-        const newSocket = io('http://localhost:4805');
-        setSocket(newSocket);
+        // 페이지를 벗어났다가 다시 들어오면 
+        // 통신이 순식간에 disconnect 와 connect가 이루어진다.
+        // 하지만 rasa에서는 disconnect가 바로 이루어지지 않고 시간이 좀 걸린다.
+        // disconnect가 이루어지는 상황에서 connect를 요청하여 메세지가 오지 않게된다. 
+        setTimeout(()=>{
+      // 진단 검사 통신 
+      const newSocket = io('http://localhost:4805');
+      setSocket(newSocket);
+        },5000)
+  
+
         // FCM 통신
         const newSocket_FCM = io('http://localhost:4810');
         setSocket_fcm(newSocket_FCM);
@@ -123,8 +130,8 @@ export default function Chatbot() {
     useEffect(() => {
         // socket 상태가 null이 아닐 때만 실행
         if (socket_fcm) {
+         
             console.log("Node.Js Server Connect(FCM))");
-
             if (diagnoseResultText_fcm !== '') {
                 sendFCM();
             }
@@ -146,14 +153,13 @@ export default function Chatbot() {
     //의존성 배열에 socket state를 설정하여socket state에 값이 설정되면 그때 실행되도록 설정
 
 
-    
-
     useEffect(() => {
         // socket 상태가 null이 아닐 때만 실행
+      
         if (socket) {
-            console.log("Node.Js Server Connect(Diagnose)");
             // 처음 메시지 전송
             socket.emit('chat message', `진단 시작 ${userName}`);
+            console.log("Node.Js Server Connect(Diagnose)");
         }
 
         if (socket) {
@@ -190,7 +196,6 @@ export default function Chatbot() {
         //  클린업 함수가 실행(이벤트 리스너 해제 및 연결 종료)
         return () => {
             if (socket) {
-                console.log("Node.Js Server Disconnect");
 
                 //disconnect 메세지 전송
                 socket.emit('chat message', `진단검사중지`);
@@ -200,6 +205,8 @@ export default function Chatbot() {
                 // 실제 소켓 연결을 종료합니다.
                 socket.disconnect();
                 setSocket(null);
+
+                console.log("Node.Js Server Disconnect");
             }
 
         };

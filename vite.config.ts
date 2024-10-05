@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'; // path 모듈 import
-import basicSsl from '@vitejs/plugin-basic-ssl'
 import mkcert from 'vite-plugin-mkcert' 
 
 // https://vitejs.dev/config/
@@ -34,17 +33,18 @@ export default defineConfig({
       },
 
       {
-        find: 'components',
-        replacement: path.resolve(__dirname, 'src/components'),
+        find: '@components',
+        replacement: "/src/components",
       },
 
       {
         find: '@',
-        replacement: path.resolve(__dirname, 'src'),
+        replacement: "/src" ,
       },
     ],
+    extensions: ['.js', '.ts', '.jsx', '.tsx'],
   },
-  
-})
+}
+)
 
 

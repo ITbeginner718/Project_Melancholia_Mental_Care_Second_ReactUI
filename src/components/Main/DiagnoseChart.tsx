@@ -125,7 +125,7 @@ export default function DiagnoseChart() {
                             <h6 className="text-uppercase text-muted ls-1 mb-1">
                                 Performance
                             </h6>
-                            <h2 className="mb-0">Diagnose Result</h2>
+                            <h2 className="mb-0">백우울척도 검사 결과</h2>
                         </div>
                     </Row>
                 </CardHeader>

@@ -1,0 +1,16 @@
+[
+    {"id":"questionA_01","code":"A","question":"거의 하루 종일 우울한 기분이 거의 매일 이어지며, 이는 주관적 느낌 (예컨대 슬픔, 공허감, 아무런 희망이 없음)이나 객관적 관찰 소견(예컨대, 자주 눈물을 흘림)으로 확인된다." },
+    {"id":"questionA_02","code":"A","question":"거의 하루 종일 거의 모든 활동에 대한 흥미나 즐거움 감소된 상태가 거의 매일 이어짐." },
+    {"id":"questionA_03","code":"A","question":"문항 선택3" },
+    {"id":"questionA_04","code":"A","question":"문항 선택3" },
+    {"id":"questionA_05","code":"A","question":"문항 선택4" },
+    {"id":"questionA_06","code":"A","question":"문항 선택5" },
+    {"id":"questionA_07","code":"A","question":"문항 선택6" },
+    {"id":"questionA_08","code":"A","question":"문항 선택7" },
+    {"id":"questionA_09","code":"A","question":"문항 선택8" },
+
+    {"id":"questionB_01","code":"B","question":"A항의 증상이 사회적, 직업적, 또는 다른 중요한 기능 영역에서 임상적으로 현저한 고통이나 손상을 초래하고 있으면 체크  " },
+    {"id":"questionB_02","code":"C","question":"A항의 증상이 약물 복용이나 기타 질병에 의한 영향이 아니면 체크" },
+    {"id":"questionB_03","code":"D","question":"A항의 증상이 조현병 등 다른 정신질환에 의한 영향이 아니면 체크" }
+]
+

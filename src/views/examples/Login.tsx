@@ -155,7 +155,7 @@ const Login = () => {
         <Card className="bg-secondary shadow border-0">
           <CardHeader className="bg-transparent pb-5">
             <div className="text-muted text-center mt-2 mb-3">
-              <small>Sign in with</small>
+              <small>소셜 로그인</small>
             </div>
             <div className="btn-wrapper text-center">
               <Button
@@ -236,7 +236,7 @@ const Login = () => {
               </div>
               <div className="text-center">
                 <Button className="my-4" color="primary" type="submit">
-                  Sign in
+                  로그인
                 </Button>
               </div>
             </Form>

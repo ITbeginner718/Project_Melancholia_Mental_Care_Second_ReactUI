@@ -41,7 +41,7 @@ import requestPermission from "../fcm/firebase-messaging_init.ts";
 import MainChatbotFeedback from "../components/Main/Main_chatbotFeedback.tsx";
 import DiagnoseChart from "../components/Main/DiagnoseChart.tsx";
 import PsychologicalCounseling from "../components/Main/PsychologicalCounseling.tsx";
-import ArticleBlog from "../components/Main/ArticleBlog.tsx";
+import Assignment from "../components/Main/Assignment.tsx";
 
 const Index = () => {
 
@@ -133,20 +133,20 @@ const Index = () => {
           </Col>
 
           <Col xl="4">
-            {/* 기사 블로그 가져오기 */}
-            <ArticleBlog />
+            {/* 상담 진행 과제 진행 여부*/}
+            <Assignment />
           </Col>
 
         </Row>
         <Row className="mt-5">
           <Col className="mb-5 mb-xl-0" xl="8">
-            {/* 심리 상담소 및 정신 건강 의학과 추천 */}
+            {/* 심리상담 조회*/}
             <PsychologicalCounseling />
 
           </Col>
 
           <Col xl="4">
-            {/* 챗봇 피드백 가져오기 */}
+            {/* 생활 습관 개선 체크 */}
             <MainChatbotFeedback />
           </Col>
         </Row>

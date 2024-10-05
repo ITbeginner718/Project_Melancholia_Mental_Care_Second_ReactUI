@@ -141,7 +141,7 @@ export default function MediaModalFullscreen({ id }: { id: string }) {
     function getMediaContentKeyword(mediaContentText: string) {
 
         if (mediaContentText.includes("우울")) {
-            return "우울할 때 노래 영상"
+            return "우울하고 무기력할 때 위로가 되는 노래 영상"
         }
 
         else if (mediaContentText.includes("슬픔")) {
@@ -200,6 +200,7 @@ export default function MediaModalFullscreen({ id }: { id: string }) {
                         <FormFeedback tooltip>
                             You will not be able to see this
                         </FormFeedback>
+                        
                         <FormText>
                             일기 내용
                         </FormText>

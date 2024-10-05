@@ -89,7 +89,7 @@ export default function MainChatbotFeedback() {
                 <CardHeader className="border-0">
                     <Row className="align-items-center">
                         <div className="col">
-                            <h3 className="mb-0">오늘의 기억하기</h3>
+                            <h3 className="mb-0">생활 습관 개선 체크</h3>
                         </div>
                         <div className="col text-right">
                             <Button
@@ -113,11 +113,11 @@ export default function MainChatbotFeedback() {
                     </thead>
                     <tbody>
 
-                        {
+                        {/* {
                             chatbotFeedbacks.map((chatbotFeedback) => (
                                 <ChatbotFeedbackList key={chatbotFeedback.userID} {...chatbotFeedback} />
                             ))
-                        }
+                        } */}
                     </tbody>
                 </Table>
             </Card>

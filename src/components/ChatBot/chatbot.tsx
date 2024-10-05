@@ -15,6 +15,32 @@ type Messages = {
     type: 'received' | 'sent'; // 'type' 필드가 받을 수 있는 값으로 'received'와 'sent'로 제한
 };
 
+
+interface TypingEffectProps {
+    anymation_text: string; // 애니메이션으로 출력할 텍스트
+    speed: number;          // 타이핑 속도 (밀리초)
+}
+
+// 타이핑 애니메이션
+const TypingEffect = ({ anymation_text, speed }: TypingEffectProps) => {
+    const [displayedText, setDisplayedText] = useState(""); // 화면에 보여질 텍스트
+    const [index, setIndex] = useState(0); // 현재 출력할 텍스트의 인덱스
+
+    useEffect(() => {
+        if (index < anymation_text.length) {
+            const timeout = setTimeout(() => {
+                setDisplayedText((prev) => prev + anymation_text[index]); // 하나씩 글자 추가
+                setIndex((prev) => prev + 1); // 다음 글자를 가리키도록 인덱스 업데이트
+            }, speed);
+
+            return () => clearTimeout(timeout); // cleanup 함수로 timeout 해제
+        }
+    }, [index, anymation_text, speed]); // index가 변경될 때마다 effect 실행
+
+    return <div>{displayedText}</div>;
+};
+
+
 export default function Chatbot() {
 
     // 현재 유저를 불러오기 
@@ -53,10 +79,10 @@ export default function Chatbot() {
     useEffect(() => {
         const userDisplayName = user?.displayName;
 
-        if(userDisplayName) {
+        if (userDisplayName) {
             setUserName(userDisplayName.replace(/\s/g, '_'));
         }
-        
+
     }, []);
 
 
@@ -211,26 +237,28 @@ export default function Chatbot() {
 
     return (
         <>
-            <h6 className="heading-small text-muted mb-4">
-                User information
-            </h6>
-            {/* 밑선 */}
-            <hr className="my-4" />
-
             <div className="App">
-                <h1>마음이</h1>
                 <div className="chat-container">
                     <ul className="message-list">
+                        {/* messages 배열을 순회하면서 각 메시지를 출력합니다. map 함수는 msg와 index를 받아 JSX 요소를 반환합니다. */}
                         {messages.map((msg, index) => (
                             <li key={index} className="message-item">
+                                {msg.type === 'received' && <img src={ProfileImageChatbot} alt="Receiver Profile" className="profile-pic " />}
+
                                 <div className={msg.type === 'received' ? 'message received' : 'message sent'}>
-                                    {msg.type === 'received' && <img src={ProfileImageChatbot} alt="Receiver Profile" className="profile-pic" />}
+
+
+                                    {/* 텍스트 출력 AI 챗봇이 얘기할 때만 애니메이션 구현 */}
+                                    {msg.type === 'received' && <TypingEffect key={index} anymation_text={msg.text} speed={20} />}
 
                                     {msg.type === 'sent' && (ProfileImageUser ? <img src={ProfileImageUser} alt="Sender Profile" className="profile-pic" /> :
-                                        <svg  className="profile-pic" fill="none" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                        </svg>)}
-                                    <span className="message-content">{msg.text}</span>
+                                    <svg className="profile-pic" fill="none" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>)}
+                                    
+                                    {msg.type === 'sent' && <span className="message-content">{msg.text}</span>}
+
+                                    {/* TypingEffect */}
                                 </div>
                             </li>
                         ))}

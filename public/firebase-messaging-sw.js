@@ -18,9 +18,9 @@ self.addEventListener("activate", function (e) {
     console.log("fcm service worker가 실행되었습니다.");
 });
 
-firebase.initializeApp( {
+firebase.initializeApp({
     // api 키
-    apiKey: import.meta.env.VITE_FIREBASE_INITIALIZE_API_KEY,
+    apiKey: "AIzaSyD4Qljh30XJkxActLd6BRDoyqq4YgN8tUU",
     authDomain: "project-mentalcare.firebaseapp.com",
     projectId: "project-mentalcare",
     storageBucket: "project-mentalcare.appspot.com",
@@ -41,7 +41,6 @@ messaging.onBackgroundMessage((payload) => {
     // };
     // self.registration.showNotification(notificationTitle, notificationOptions);
     console.log("onBackgroundMessage:", payload); 
-    
 });
 
 

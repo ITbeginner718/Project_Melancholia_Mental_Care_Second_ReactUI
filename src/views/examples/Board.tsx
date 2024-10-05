@@ -142,8 +142,6 @@ const Tables = () => {
         setTweet(value);
     }
 
-    
-
         // gpt api 기능
        const boardContentAnalyze_GPTAPI = async () => {
 

@@ -50,8 +50,10 @@ const AdminNavbar = (props) => {
       // eslint-disable-next-line no-restricted-globals
       const ok = confirm("are you sure you want to log out?");
       if (ok) {
-         await auth.signOut();
-         navigate("/auth/login");
+        // 페이지 이동을 먼저 한 후 
+      await navigate("/auth/login");
+        // 그 다음 로그인 
+       await auth.signOut();
       }
    };
 

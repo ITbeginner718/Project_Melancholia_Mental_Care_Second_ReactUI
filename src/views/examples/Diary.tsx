@@ -19,21 +19,14 @@
 import {
     Card,
     CardHeader,
-    CardFooter,
-    Pagination,
-    PaginationItem,
-    PaginationLink,
-    Table,
     Container,
     Row,
     Button,
     Input,
     FormGroup,
     Label,
-    FormText,
     Form,
     Col,
-    Modal, ModalHeader, ModalBody, ModalFooter
 } from "reactstrap";
 // core components
 import Header from "../../components/Headers/Header.jsx";
@@ -44,7 +37,7 @@ import { auth, db, storage } from "../../firebase";
 import { addDoc, collection, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-
+import useDidMountEffect from "@components/hooks/useDidMountEffect";
 
 const Diary = () => {
 
@@ -89,16 +82,23 @@ const Diary = () => {
     // setState() 함수가 비동기로 돌아가기 때문에 gptAPI 결과값을 먼저 받기도 전에 firebase 저장을 실행 
     // feeling 값이 setState()함수에 잘 들어오면 그때 데이터 저장 
 
-    useEffect(() => {
-        // 처음 렌더링 될 때 useEffect가 실행되므로 
-        // 빈 값이 들어갈 때는 API를 호출하지 않는 방어코드도 넣어줍니다.
+    // useEffect(() => {
+    //     // 처음 렌더링 될 때 useEffect가 실행되므로 
+    //     // 빈 값이 들어갈 때는 API를 호출하지 않는 방어코드도 넣어줍니다.
 
-        if (feeling !== "") {
-            //데이터 저장
-            saveDiary();
-        }
+    //     if (feeling !== "") {
+    //         //데이터 저장
+    //         saveDiary();
+    //     }
 
-    }, [feeling])
+    // }, [feeling])
+
+    // 커스텀 hook 생성
+    useDidMountEffect(() => {
+        // 데이터 저장
+        saveDiary();
+      }, [feeling]);
+
 
     //전송 이벤트 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

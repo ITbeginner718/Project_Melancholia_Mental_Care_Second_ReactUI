@@ -18,17 +18,17 @@
 import React, { useEffect, useState } from "react";
 
 // reactstrap components
-import { Button, Card, CardBody, CardHeader, Col, Container, FormGroup, Input, Row, Form } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Container, FormGroup, Input, Row, Form, Table, CardFooter, Pagination, PaginationItem, PaginationLink } from "reactstrap";
 
 // core components
 // 윗쪽 
 import Header from "../../components/Headers/Header.jsx";
 import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파일
-import Chatbot from "../../components/ChatBot/chatbot";
-import ChatbotDiagnose from "../../components/ChatBotDiagnose/ChatbotDiagnose.tsx";
+import ChatbotDiagnose from "@components/ChatBotDiagnose/ChatbotDiagnose.tsx";
 import chatbotImage from "../../assets/img/theme/GraidentAiRobot.jpg";
+import DSM5_Board from "@components/DiagnoseTable/diagnoseMainBoard.js";
 
-export default function ChatDiagnose () {
+export default function ChatDiagnose() {
   //페이지 이동 시 
   useEffect(() => {
     // 페이지를 떠나기 전에 확인 요청
@@ -132,7 +132,7 @@ export default function ChatDiagnose () {
               <CardHeader className="bg-white border-0">
                 <Row className="align-items-center">
                   <Col xs="8">
-                    <h3 className="mb-0">AI 우울증 진단검사</h3>
+                    <h3 className="mb-0">우울증 진단검사</h3>
                   </Col>
                   <Col className="text-right" xs="4">
                     <Button
@@ -148,8 +148,9 @@ export default function ChatDiagnose () {
               </CardHeader>
 
               <CardBody>
-                {/* 챗봇 컴포넌트 */}
-                <ChatbotDiagnose />
+                {/* 검사표 삽입 */}
+
+                <DSM5_Board />
               </CardBody>
             </Card>
           </Col>

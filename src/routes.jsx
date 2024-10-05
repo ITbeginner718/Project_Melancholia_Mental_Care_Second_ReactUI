@@ -31,6 +31,8 @@ import MediaRecommad from "./views/examples/MediaRecommad.tsx";
 import ChatDiagnose from "./views/examples/ChatDiagnose.tsx";
 import DiagnoseDetail from "./components/ChatBotDiagnose/DiagnoseDetail.tsx";
 import Notification from "./views/examples/Notification.tsx";
+import Diagnose_DSM5 from "@components/DiagnoseTable/Diagnose_DSM5.tsx";
+import Result_Diagnose_DSM5 from "@components/DiagnoseTable/Result_DSM5.tsx";
 
 const routes = [
   {
@@ -110,13 +112,31 @@ const routes = [
     layout: "/admin",
   },
 
-    // 진단 검사 상세 페이지 
-    {
-      path: "/diagnose/detail/:id",
-      name: "Anonymous",
-      component: <DiagnoseDetail />,
-      layout: "/admin",
-    },
+  // 진단 검사 상세 페이지 
+  {
+    path: "/diagnose/detail/:id",
+    name: "Anonymous",
+    component: <DiagnoseDetail />,
+    layout: "/admin",
+  },
+
+  //DSM-5 검사
+  {
+    path: "/Diagnose_DSM5",
+    name: "Anonymous",
+    component: <Diagnose_DSM5 />,
+    layout: "/admin",
+  },
+
+  //DSM-5 검사 결과
+  {
+    path: "/Diagnose_DSM5/result",
+    name: "Anonymous",
+    component: <Result_Diagnose_DSM5 />,
+    layout: "/admin",
+  },
+
+
 
   {
     path: "/icons",
@@ -141,6 +161,7 @@ const routes = [
     component: <Tables />,
     layout: "/admin",
   },
+  
 
   {
     path: "/login",
@@ -157,6 +178,7 @@ const routes = [
     component: <Register />,
     layout: "/auth",
   },
+
 
 ];
 export default routes;

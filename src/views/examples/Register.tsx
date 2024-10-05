@@ -172,7 +172,7 @@ const Register = () => {
         <Card className="bg-secondary shadow border-0">
           <CardHeader className="bg-transparent pb-5">
             <div className="text-muted text-center mt-2 mb-4">
-              <small>Sign up with</small>
+              <small>소셜 로그인</small>
             </div>
             <div className="text-center">
               <Button
@@ -212,7 +212,7 @@ const Register = () => {
           </CardHeader>
           <CardBody className="px-lg-5 py-lg-5">
             <div className="text-center text-muted mb-4">
-              <small>Or sign up with credentials</small>
+              <small>회원 정보를 입력해주세요.</small>
             </div>
             <Form role="form" onSubmit={onSubmit}>
               <FormGroup>
@@ -261,12 +261,7 @@ const Register = () => {
                   />
                 </InputGroup>
               </FormGroup>
-              <div className="text-muted font-italic">
-                <small>
-                  password strength:{" "}
-                  <span className="text-success font-weight-700">strong</span>
-                </small>
-              </div>
+              
               <Row className="my-4">
                 <Col xs="12">
                   <div className="custom-control custom-control-alternative custom-checkbox">

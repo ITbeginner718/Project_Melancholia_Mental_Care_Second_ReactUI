@@ -14,7 +14,6 @@
 
 .chat-container {
     width: 100%;
-    max-width: 600px;
     margin: 0 auto;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -22,9 +21,9 @@
   
   .message-list {
     list-style: none;
-    padding: 0;
+    padding: 20px;
     margin: 0;
-    height: 600px;
+    height: 1000px;
     overflow-y: scroll;
     background-color: #f9f9f9;
     border: 1px solid #ddd;
@@ -39,6 +38,10 @@
     word-wrap: break-word;
   }
   
+  .sent-icon-align{
+    margin-left: auto; /* Align to the right */
+  }
+
   .message.sent {
     background-color: #dcf8c6; /* Light green background for sent messages */
     margin-left: auto; /* Align to the right */
@@ -75,6 +78,7 @@
   }
 
   .profile-pic {
+    margin-right: 10px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
