@@ -33,6 +33,7 @@ import DiagnoseDetail from "./components/ChatBotDiagnose/DiagnoseDetail.tsx";
 import Notification from "./views/examples/Notification.tsx";
 import Diagnose_DSM5 from "@components/DiagnoseTable/Diagnose_DSM5.tsx";
 import Result_Diagnose_DSM5 from "@components/DiagnoseTable/Result_DSM5.tsx";
+import Diagnose_BDI from "@components/DiagnoseTable/Dianose_BDI.tsx";
 
 const routes = [
   {
@@ -136,7 +137,15 @@ const routes = [
     layout: "/admin",
   },
 
+   //Diagnose_BDI 검사
+   {
+    path: "/Diagnose_BDI",
+    name: "Anonymous",
+    component: <Diagnose_BDI />,
+    layout: "/admin",
+  },
 
+  
 
   {
     path: "/icons",

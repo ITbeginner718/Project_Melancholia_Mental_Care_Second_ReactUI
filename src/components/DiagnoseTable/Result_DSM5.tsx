@@ -95,11 +95,6 @@ export default function Result_Diagnose_DSM5() {
 
 
     const snapshot = await getDocs(tweetQuery);
-    const docData = snapshot.docs[0].data();
-    const localIsSatisfied:Boolean = docData.isSatisfied;
-
-    console.log("isSatisfied state_seconde" ,isSatisfied);
-    console.log("firebase_Satisfied:" ,localIsSatisfied);
 
         //데이터가 없는 경우 데이터 삽입
         if (snapshot.empty) {
@@ -111,7 +106,12 @@ export default function Result_Diagnose_DSM5() {
         
         //데이터가 있는 경우 업데이트 처리
         else
-        {   
+        {
+            const docData = snapshot.docs[0].data();
+            const localIsSatisfied:Boolean = docData.isSatisfied;
+        
+            console.log("isSatisfied state_seconde" ,isSatisfied);
+            console.log("firebase_Satisfied:" ,localIsSatisfied);
 
             //서로 다른 값인 경우 데이터 저장
             const docRef = doc(db, "DiagnoseDSM5", snapshot.docs[0].id);

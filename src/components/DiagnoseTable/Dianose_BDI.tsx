@@ -18,124 +18,56 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 // reactstrap components
-import { Button, Card, CardBody, CardHeader, Col, Container, FormGroup, Input, Row, Form, Table, CardFooter, Pagination, PaginationItem, PaginationLink, ListGroup, ListGroupItem } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, } from "reactstrap";
 
 // core components
-// 윗쪽 
-import Header from "../Headers/Header.jsx";
 import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파일
 import chatbotImage from "../../assets/img/theme/GraidentAiRobot.jpg";
-import { useNavigate } from "react-router-dom";
-import DSM5CheckBox from "@components/DiagnoseTable/DSM5_CheckBox";
+import BDI_list from '../../../diagnose_list/BDI_list.json';
+import RadioGroup from "./RadioGroup";
+import Radio from "./Radio";
 
 
-// 체크박스 속성 타입 설정
-export interface CheckedItem {
-    id: string;
-    code: string;
-    question: string;
 
+interface Description {
+    level: number;
+    content: string;
 }
 
-export default function Diagnose_DSM5() {
+interface Detail {
+    index:number;
+    name: string;
+    description: Description[];
+}
 
-    // DSM5_List 리스트 가져오기
-    const [DSM5_LIST, setDSM5_LIST] = useState<CheckedItem[]>([]);
+interface Symptom {
+    category: string;
+    details: Detail[];
+}
 
-    // 선택된 함목 가져오기
-    const [checkedList, setCheckedList] = useState<CheckedItem[]>([]);
+interface BDI_list {
+    symptoms: Symptom[];
+}
 
-    //페이지 이동
-    const navigate = useNavigate();
+interface SelectedValue {
+    index:number;
+    category: string;
+    name: string;
+    level: number;
+    content: string;
+}
+export default function Diagnose_BDI() {
 
-    //나중에 꼭 주석 풀어야 함
-    //페이지 이동 시 
-    useEffect(() => {
-    // 페이지를 떠나기 전에 확인 요청
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        const message = "정말 이 페이지를 떠나시겠습니까? 페이지를 떠나면 검사 기록은 저장되지 않습니다.";
-        e.returnValue = message; // Chrome에서 필요
-        return message; // 다른 브라우저에서 필요
-    };
+    //데이터 갖고 오기
+    const BDI_Data: BDI_list = BDI_list;
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    //선택된 데이터 저장
+    const [selectedValues, setSelectedValues] = useState<SelectedValue[]>([]);
 
-    // 컴포넌트가 언마운트 될 때 이벤트 리스너 제거
-    return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-    };}, []); // 빈 의존성 배열을 사용해서 컴포넌트 마운트 시에만 이벤트 리스너를 추가하고, 언마운트 시에 제거
-
-
-    // 리스트 가져오기
-    useEffect(() => {
-        const fetchDSM5List = async () => {
-            try {
-                const response = await fetch(import.meta.env.VITE_DSM5_LIST_URL);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data: CheckedItem[] = await response.json();
-                setDSM5_LIST(data);
-            } catch (error) {
-                console.error('Error fetching DSM5_LIST:', error);
-            }
-        };
-
-        fetchDSM5List();
-    }, []);
-
-    // A문항
-    const questionA = DSM5_LIST.filter(data => data.code == "A");
-    // B문항
-    const questionB = DSM5_LIST.filter(data => data.code == "B");
-    // C문항
-    const questionC = DSM5_LIST.filter(data => data.code == "C");
-    // D문항
-    const questionD = DSM5_LIST.filter(data => data.code == "D");
-
-    // 체크 박스 선택 이벤트 (useCallback)
-    const onCheckedItem = useCallback(
-        (checked: boolean, item: CheckedItem) => {
-            if (checked) {
-                // 가장 뒷쪽에 추가
-                setCheckedList((prev) => [...prev, item]);
-            } else if (!checked) {
-                // 삭제
-                setCheckedList(checkedList.filter((el) => el.id !== item.id));
-            }
-        },
-        [checkedList]
-    );
-
-    // 버튼 클릭시 결과 창으로 데이터 이동
-    const onClickCheckBox = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        
-        e.preventDefault();
-
-        const ok = confirm("DSM5 검사 결과를 제출 하겠습니까?");
-
-        if(ok)
-        {
-            checkedList.map((item) => (
-                console.log(item, "= item.id:", item.id, "item.question:", item.question, item.code)
-            ))
-            
-    
-            // 페이지 이동
-            // 선택된 항목들의 ID를 쿼리 스트링으로 변환
-            const queryString = checkedList
-                .map(item => `selected=${encodeURIComponent(item.id)}!${encodeURIComponent(item.code)}`)
-                .join('&');
-    
-            navigate(`/admin/Diagnose_DSM5/result?${queryString}`);;
-        }
-
-       
-    }
+    const [DBI_Result, setDBI_Result]= useState(0);
 
     return (
         <>
-            <Header />
             {/* Page content */}
             <Container className="mt--6" fluid>
                 <Row>
@@ -232,13 +164,13 @@ export default function Diagnose_DSM5() {
                                     <CardHeader className="bg-white border-0">
                                         <Row className="align-items-center">
                                             <Col xs="8">
-                                                <h3 className="mb-0">DSM-5 검사(1차)</h3>
+                                                <h3 className="mb-0">BDI 검사(2차)</h3>
                                             </Col>
                                             <Col className="text-right" xs="4">
                                                 <Button
                                                     color="primary"
                                                     href="#pablo"
-                                                    onClick={onClickCheckBox}
+                                                    // onClick={onClickCheckBox}
                                                     size="=lm"
                                                 >  DSM-5 검사 결과 버튼
                                                 </Button>
@@ -247,57 +179,52 @@ export default function Diagnose_DSM5() {
                                     </CardHeader>
 
                                     <CardBody>
+                                    <div>
+                    {BDI_Data.symptoms.map((symptom: Symptom, sIndex: number) => (
 
-                                    <ListGroup>
-                                    <span>A항</span>
-                                    {/* 검사표 삽입 */}
-                                    {questionA.map((list) => (
-                                           <ListGroupItem>
-                                    <DSM5CheckBox
-                                    key={list.id}
-                                    {...list}
-                                    onCheckedItem={onCheckedItem}/>
-                                    </ListGroupItem>
+                        <div key={sIndex}>
+                            {/*정서적, 인지적 등등 증상 */}
+
+                            {symptom.details.map((detail: Detail, dIndex: number) => (
+                                <div key={dIndex}>
+                                     {/* 세부 증상: 슬픔, 울음, 분노 */}
+                                            <ul>
+                                            <RadioGroup 
+                                                label={detail.name} 
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                console.log(event.target.value);
+                                                const [index,category, name, level, content] = event.target.value.split('|');
+                                                
+                                                // handleRadioChange({
+                                                //     index:parseInt(index),
+                                                //     category,
+                                                //     name,
+                                                //     level: parseInt(level),
+                                                //     content
+                                                // });
+                                                
+                                                }}
+                                            >
+                                                {detail.description.map((desc: Description, index: number) => (
+                                                <div key={index}>
+                                                    <Radio 
+                                                    category={symptom.category} 
+                                                    name={detail.name} 
+                                                    level={desc.level} 
+                                                    content={desc.content} 
+                                                    index={detail.index}
+                                                    >
+                                                    {desc.content}
+                                                    </Radio>
+                                                </div>
+                                                ))}
+                                            </RadioGroup>
+                                            </ul>
+                                        </div>
                                     ))}
-
-                                    <br />
-                                    <span>B항</span>
-                                    {questionB.map((list) => (
-                                         <ListGroupItem>
-                                            <DSM5CheckBox
-                                         key={list.id}
-                                         {...list}
-                                         onCheckedItem={onCheckedItem}/>
-                                     </ListGroupItem>
-                                        
-                                    ))}
-
-                                    <br />
-                                    <span>C항</span>
-                                    {questionC.map((list) => (
-                                           <ListGroupItem>
-                                        <DSM5CheckBox
-                                            key={list.id}
-                                            {...list}
-                                            onCheckedItem={onCheckedItem}
-                                        />
-                                        </ListGroupItem>
-                                    ))}
-
-                                    <br />
-                                    <span>D항</span>
-                                    {questionD.map((list) => (
-                                         <ListGroupItem>
-                                        <DSM5CheckBox
-                                            key={list.id}
-                                            {...list}
-                                            onCheckedItem={onCheckedItem}
-                                        />
-                                        </ListGroupItem>
-                                    ))}
-
-                                    </ListGroup>
-
+                                </div>
+                            ))}
+                        </div>  
                                     </CardBody>
                                 </Card>
                                 

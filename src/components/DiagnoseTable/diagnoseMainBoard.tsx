@@ -2,11 +2,12 @@
 // reactstrap components
 import { Navigate, UNSAFE_NavigationContext, useNavigate } from "react-router-dom";
 import {
-    Button, Card,CardBody, CardHeader, Col, Row, CardTitle, CardText
+    Button, Card,CardBody, CardHeader, Col, Row, CardTitle, CardText,
+    Badge
 } from "reactstrap";
 import { auth, db } from "@/firebase";
 import { query, collection, where, getDocs } from "firebase/firestore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 
 export default function DiagnoseMainBoard() {
@@ -36,29 +37,34 @@ const save_update_DSM5Result = async () => {
     );
 
 
-const snapshot = await getDocs(tweetQuery);
+        const snapshot = await getDocs(tweetQuery);
 
-//값이 없으면 종료 
-if(snapshot.empty)
-{
-    return;
-}
+        //값이 없으면 종료 
+        if(snapshot.empty)
+        {
+            return;
+        }
 
-else
-{
+        else
+        {
+            const docData = snapshot.docs[0].data();
+            const localIsSatisfied:Boolean = docData.isSatisfied;
     
-}
-const docData = snapshot.docs[0].data();
-const localIsSatisfied:Boolean = docData.isSatisfied;
+            console.log("진단 여부:", localIsSatisfied);
 
-console.log("진단 여부:", localIsSatisfied);
+            setIsDiagnoseResult(localIsSatisfied);
+        }
 
+        }
 
-}
+    useEffect(()=>{
+        save_update_DSM5Result();
+    },[])
 
 
     const navigate = useNavigate();
 
+    //DSM-5 1차 검사 이동
     const onMoveDSM5 =()=>{
     //정말 삭제 할 것인지 사용자 확인 
     // eslint-disable-next-line no-restricted-globals
@@ -68,7 +74,24 @@ console.log("진단 여부:", localIsSatisfied);
     {
         navigate("/admin/Diagnose_DSM5");
     }
+}
 
+    const onMoveBDI =()=>{
+        //정말 삭제 할 것인지 사용자 확인 
+        // eslint-disable-next-line no-restricted-globals
+        const ok = confirm("BDI 검사를 진행하겠습니까?");
+    
+        if(ok)
+        {
+            if(isDiagnoseResult)
+            {
+                navigate("/admin/Diagnose_BDI");
+            }
+            else
+            {
+                confirm("BDI검사를 진행할 수 없습니다. DSM-5 진단 조건에 부합해야 합니다.");
+            }
+        }
     }
 
     return (
@@ -78,7 +101,14 @@ console.log("진단 여부:", localIsSatisfied);
                 <CardHeader className="bg-white border-0">
                     <Row className="align-items-center">
                         <Col xs="8">
-                            <h3 className="mb-0">우울증 진단 검사</h3>
+                            <h3 className="mb-0">
+                                <span>DSM-5 검사: </span>
+                                <Button color="danger" outline >
+                                {isDiagnoseResult==null?<>아직 검사 안함</>:null}
+                                {isDiagnoseResult==true?<>우울증 진단 조건에 부합함</>:null}
+                                {isDiagnoseResult==false?<>우울증 진단 조건에 부합하지 않음</>:null}
+                                </Button>
+                            </h3>
                         </Col>
                         <Col className="text-right" xs="4">
                         </Col>
@@ -109,7 +139,7 @@ console.log("진단 여부:", localIsSatisfied);
                                 <CardText>
                                     21개 문항으로 구성된 가장 널리 사용되는 우울증 정도 판단 도구입니다. 아론 백(Aeron Beck)이 개발한 우울증 검사로 일반적으로 많이 사용되는 검사. 인지, 정서, 동기, 신체적 증상 등 21개의 문항으로 우울증 테스트 진행
                                 </CardText>
-                                <Button color="primary" >
+                                <Button onClick={onMoveBDI} color="primary" >
                                     검사 시작
                                 </Button>
                             </Card>
@@ -117,8 +147,6 @@ console.log("진단 여부:", localIsSatisfied);
                     </Row>
                 </CardBody>
             </Card>
-                
-          
 
         </>
     )

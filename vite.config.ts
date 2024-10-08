@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import path from 'path'; // path 모듈 import
+import path from 'path'; // path 모듈 import  
 import mkcert from 'vite-plugin-mkcert' 
 
 // https://vitejs.dev/config/
