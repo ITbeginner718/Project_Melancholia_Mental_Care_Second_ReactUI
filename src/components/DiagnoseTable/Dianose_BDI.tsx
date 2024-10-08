@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 // reactstrap components
 import { Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, } from "reactstrap";
@@ -26,7 +26,8 @@ import chatbotImage from "../../assets/img/theme/GraidentAiRobot.jpg";
 import BDI_list from '../../../diagnose_list/BDI_list.json';
 import RadioGroup from "./RadioGroup";
 import Radio from "./Radio";
-
+import { addDoc, collection } from "firebase/firestore";
+import { auth,db } from "@/firebase";
 
 
 interface Description {
@@ -57,6 +58,8 @@ interface SelectedValue {
     content: string;
 }
 export default function Diagnose_BDI() {
+    // 현재 유저를 불러오기 
+    const user = auth.currentUser;
 
     //데이터 갖고 오기
     const BDI_Data: BDI_list = BDI_list;
@@ -65,6 +68,195 @@ export default function Diagnose_BDI() {
     const [selectedValues, setSelectedValues] = useState<SelectedValue[]>([]);
 
     const [DBI_Result, setDBI_Result]= useState(0);
+
+    //날짜 생성
+    const date = new Date();
+
+    //검사 결과 score
+    useEffect(() => {
+        const totalLevel = sortedSelectedValues.reduce((sum, value) => sum + value.level, 0);
+        setDBI_Result(totalLevel);
+      }, [selectedValues]);
+      
+    //데이터가 선택될 때마다 데이터 정렬
+    const sortedSelectedValues = useMemo(() => {
+        return [...selectedValues].sort((a, b) => a.index - b.index);
+    }, [selectedValues]);
+
+    const packageSelectedValues= (selectedValues: SelectedValue[]):string =>
+        {
+            return selectedValues.map(item => 
+                `${item.index}|${item.category}|${item.name}|${item.level}|${item.content}`
+              ).join('@');
+        }
+
+    
+    //DBI 검사 결과 패키징
+    const DBIResultcontent = packageSelectedValues(selectedValues);
+
+    
+    //DBI 검사 결과 저장 
+    const saveDBI= async()=>{
+    
+        if (!user) return;
+
+        try {
+            // 데이터 저장
+            const doc = await addDoc(collection(db, "diagnoseBDIresult"), {
+                // tweet,// 게시판 내용 
+                // Credential: Date.now(),//특정 시간부터 경과한 밀리초(millisecond 반환) 
+                // // 작성자 유저 닉네임:, 유저 닉네임이 없으면 익명으로 저장 
+                // username: user.displayName || "Anonymous",
+                // //트윗을 삭제하고자 할 때 트윗을 삭제할 권한이 있는 유저를 구분
+                // //트윗을 삭제하려는 유저의 ID와 여기 userID에 저장된 ID가 일치하는 확인 
+                // userId: user.uid,
+
+                // 진단 검사 결과 데이터
+
+                // 사용자 ID 
+                userID: user.uid,
+
+                // 게시판 ID
+                Credential: Date.now(),
+
+                //날짜 
+                diagnoseDate: (date.getFullYear() + "/" +
+                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
+                    ("0" + (date.getDate())).slice(-2) + "-" +
+                    ("0" + (date.getHours())).slice(-2) + ":" +
+                    ("0" + (date.getMinutes())).slice(-2) +
+                    ":" + ("0" + (date.getSeconds())).slice(-2)),
+
+                //검사결과 리스트(text)
+                DBIResultcontent,
+
+                //검사결과 리스트(score)
+                DBI_Result,
+            });
+
+            console.log(doc);
+
+        }
+
+
+        catch (e) {
+            console.log("firebase error:", e);
+        }
+
+    }
+
+    //증상별 데이터 정렬
+    const {
+        // 감정 
+        emotionalSymptoms,
+        //인지
+        cognitiveSymptoms,
+        //동기(행동)
+        motivationalSymptoms,
+        //신체
+        physicalSymptoms
+    } = useMemo(() => {
+        const emotional: SelectedValue[] = [];
+        const cognitive: SelectedValue[] = [];
+        const motivational: SelectedValue[] = [];
+        const physical: SelectedValue[] = [];
+
+        selectedValues.forEach(value => {
+            if(value.level>=1)
+            {
+                switch (value.category) {
+                    case "정서적 증상":
+                        emotional.push(value);
+                        break;
+                    case "인지적 증상":
+                        cognitive.push(value);
+                        break;
+                    case "동기적 증상":
+                        motivational.push(value);
+                        break;
+                    case "신체적 증상":
+                        physical.push(value);
+                        break;
+                }
+            }
+
+            else
+            {
+                console.log(`${value.category}, ${value.name}, ${value.content}, ${value.level}`);
+            }
+            
+        });
+
+        // 각 배열 내에서 level 기준으로 정렬
+        const sortByLevel = (a: SelectedValue, b: SelectedValue) => b.level - a.level;
+
+        return {
+            emotionalSymptoms: emotional.sort(sortByLevel),
+            cognitiveSymptoms: cognitive.sort(sortByLevel),
+            motivationalSymptoms: motivational.sort(sortByLevel),
+            physicalSymptoms: physical.sort(sortByLevel)
+        };
+    }, [selectedValues]);
+
+    //라디오버튼 클릭시 데이터 저장
+    const handleRadioChange = (value: SelectedValue) => {
+        setSelectedValues(prev => {
+            const newValues = prev.filter(item => item.name !== value.name);
+            return [...newValues, value];
+        });
+    };
+
+    //데이터 전송
+     const onClick=(e: React.MouseEvent<HTMLButtonElement, MouseEvent>)=>
+     {
+        e.preventDefault();
+        //전부다 체크가 되었는지 확인해야 함
+
+        if(selectedValues.length!==21)
+        {
+            alert("모두 체크를 해줘야 합니다.");
+        }
+
+        else
+        {
+            const ok = confirm("결과를 제출하겠습니까?");
+            
+            if(ok)
+            {
+                console.log("검사 결과 ================================================");
+                //진단 검사 분류
+                {sortedSelectedValues.forEach((value)=>{
+                    console.log(`${value.category},${value.name}, ${value.content}, ${value.level} `)
+                })}
+
+                console.log(`총 score:${DBI_Result}`);
+                
+                console.log("정서적 증상 ================================================");
+                {emotionalSymptoms.map((value)=>(
+                    console.log(`${value.category},${value.name}, ${value.level} `)
+                ))}
+                console.log("인지적 증상 ================================================");
+                {cognitiveSymptoms.map((value)=>(
+                    console.log(`${value.category},${value.name}, ${value.level} `)
+                ))}
+                console.log("동기적 증상 ================================================");
+                {motivationalSymptoms.map((value)=>(
+                    console.log(`${value.category},${value.name}, ${value.level} `)
+                ))}
+                console.log("신체적 증상 ================================================");
+                {physicalSymptoms.map((value)=>(
+                    console.log(`${value.category},${value.name}, ${value.level} `)
+                ))}
+                
+                //firebase 데이터 저장
+                saveDBI();
+
+                //데이터 전송
+            }
+        }
+
+     }
+     
 
     return (
         <>
@@ -170,7 +362,7 @@ export default function Diagnose_BDI() {
                                                 <Button
                                                     color="primary"
                                                     href="#pablo"
-                                                    // onClick={onClickCheckBox}
+                                                    onClick={onClick}
                                                     size="=lm"
                                                 >  DSM-5 검사 결과 버튼
                                                 </Button>
@@ -179,34 +371,34 @@ export default function Diagnose_BDI() {
                                     </CardHeader>
 
                                     <CardBody>
-                                    <div>
-                    {BDI_Data.symptoms.map((symptom: Symptom, sIndex: number) => (
 
-                        <div key={sIndex}>
-                            {/*정서적, 인지적 등등 증상 */}
+                                 
+                    {BDI_Data.symptoms.map((symptom: Symptom) => (
+                            <>
 
                             {symptom.details.map((detail: Detail, dIndex: number) => (
                                 <div key={dIndex}>
                                      {/* 세부 증상: 슬픔, 울음, 분노 */}
-                                            <ul>
+                                            <ListGroup numbered>
                                             <RadioGroup 
                                                 label={detail.name} 
                                                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                                 console.log(event.target.value);
                                                 const [index,category, name, level, content] = event.target.value.split('|');
                                                 
-                                                // handleRadioChange({
-                                                //     index:parseInt(index),
-                                                //     category,
-                                                //     name,
-                                                //     level: parseInt(level),
-                                                //     content
-                                                // });
-                                                
+                                                handleRadioChange({
+                                                    index:parseInt(index),
+                                                    category,
+                                                    name,
+                                                    level: parseInt(level),
+                                                    content
+                                                });
+
                                                 }}
                                             >
                                                 {detail.description.map((desc: Description, index: number) => (
-                                                <div key={index}>
+                                                     <ListGroupItem>
+                                               
                                                     <Radio 
                                                     category={symptom.category} 
                                                     name={detail.name} 
@@ -216,15 +408,16 @@ export default function Diagnose_BDI() {
                                                     >
                                                     {desc.content}
                                                     </Radio>
-                                                </div>
+                                             
+                                                    </ListGroupItem>
                                                 ))}
                                             </RadioGroup>
-                                            </ul>
+                                            </ListGroup>
+                                            
                                         </div>
                                     ))}
-                                </div>
+                               </>
                             ))}
-                        </div>  
                                     </CardBody>
                                 </Card>
                                 

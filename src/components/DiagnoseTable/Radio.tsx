@@ -29,6 +29,7 @@ function Radio({ index, category, children, name, level, content, defaultChecked
         onChange={onChange}
         checked={checked}
       />
+      <span> </span>
       {children}
     </label>
   );

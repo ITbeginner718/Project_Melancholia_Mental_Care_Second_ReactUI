@@ -138,7 +138,6 @@ export default function Result_Diagnose_DSM5() {
     }
 
         
-
     //데이터 저장
     const save_DSM5Result = async () => {
 
