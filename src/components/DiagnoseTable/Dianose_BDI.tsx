@@ -28,6 +28,7 @@ import RadioGroup from "./RadioGroup";
 import Radio from "./Radio";
 import { addDoc, collection } from "firebase/firestore";
 import { auth,db } from "@/firebase";
+import Header from "@components/Headers/Header";
 
 
 interface Description {
@@ -83,67 +84,13 @@ export default function Diagnose_BDI() {
         return [...selectedValues].sort((a, b) => a.index - b.index);
     }, [selectedValues]);
 
-    const packageSelectedValues= (selectedValues: SelectedValue[]):string =>
-        {
-            return selectedValues.map(item => 
-                `${item.index}|${item.category}|${item.name}|${item.level}|${item.content}`
-              ).join('@');
-        }
+    // const packageSelectedValues= (selectedValues: SelectedValue[]):string =>
+    //     {
+    //         return selectedValues.map(item => 
+    //             `${item.index}|${item.category}|${item.name}|${item.level}|${item.content}`
+    //           ).join('@');
+    //     }
 
-    
-    //DBI 검사 결과 패키징
-    const DBIResultcontent = packageSelectedValues(selectedValues);
-
-    
-    //DBI 검사 결과 저장 
-    const saveDBI= async()=>{
-    
-        if (!user) return;
-
-        try {
-            // 데이터 저장
-            const doc = await addDoc(collection(db, "diagnoseBDIresult"), {
-                // tweet,// 게시판 내용 
-                // Credential: Date.now(),//특정 시간부터 경과한 밀리초(millisecond 반환) 
-                // // 작성자 유저 닉네임:, 유저 닉네임이 없으면 익명으로 저장 
-                // username: user.displayName || "Anonymous",
-                // //트윗을 삭제하고자 할 때 트윗을 삭제할 권한이 있는 유저를 구분
-                // //트윗을 삭제하려는 유저의 ID와 여기 userID에 저장된 ID가 일치하는 확인 
-                // userId: user.uid,
-
-                // 진단 검사 결과 데이터
-
-                // 사용자 ID 
-                userID: user.uid,
-
-                // 게시판 ID
-                Credential: Date.now(),
-
-                //날짜 
-                diagnoseDate: (date.getFullYear() + "/" +
-                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
-                    ("0" + (date.getDate())).slice(-2) + "-" +
-                    ("0" + (date.getHours())).slice(-2) + ":" +
-                    ("0" + (date.getMinutes())).slice(-2) +
-                    ":" + ("0" + (date.getSeconds())).slice(-2)),
-
-                //검사결과 리스트(text)
-                DBIResultcontent,
-
-                //검사결과 리스트(score)
-                DBI_Result,
-            });
-
-            console.log(doc);
-
-        }
-
-
-        catch (e) {
-            console.log("firebase error:", e);
-        }
-
-    }
 
     //증상별 데이터 정렬
     const {
@@ -198,6 +145,172 @@ export default function Diagnose_BDI() {
         };
     }, [selectedValues]);
 
+
+    //DBI 검사 결과(content)
+    const packageSelectedValues = useCallback((selectedValues: SelectedValue[]): string => {
+        return selectedValues.map(item => 
+            `${item.index}|${item.category}|${item.name}|${item.level}|${item.content}`
+        ).join('@');
+        }, []);
+
+   //DBI 검사 결과 패키징(content)
+    const DBIResultcontent = useMemo(() => packageSelectedValues(selectedValues), [selectedValues]);
+    // const DBIResultcontent = packageSelectedValues(selectedValues);
+
+
+    //=========================================================================증상별 분류(키워드)============================
+    //DBI 검사 결과 정서적 증상(keyword, emotionalSymptoms)
+    const packageEmotionalSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
+    return selectedValues.map(item => 
+        `${item.category}|${item.name}|${item.level}`
+    ).join('@');
+    }, []);
+
+   //DBI 검사 결과 정서적 증상 패키징(emotionalSymptoms)
+    const DBIResultEmotionalSymptoms = useMemo(() => packageEmotionalSymptoms(emotionalSymptoms), [emotionalSymptoms]);
+
+
+    //DBI 검사 결과 인지적 증상(keyword, cognitiveSymptoms)
+    const packageCognitiveSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
+    return selectedValues.map(item => 
+        `${item.category}|${item.name}|${item.level}`
+    ).join('@');
+    }, []);
+
+    //DBI 검사 결과 인지적 증상 패키징(cognitiveSymptoms)
+    const DBIResultCognitiveSymptoms = useMemo(() => packageCognitiveSymptoms(cognitiveSymptoms), [cognitiveSymptoms]);
+    
+
+
+    //DBI 검사 결과 동기적 증상(keyword, motivationalSymptoms)
+    const packageMotivationalSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
+        return selectedValues.map(item => 
+            `${item.category}|${item.name}|${item.level}`
+        ).join('@');
+        }, []);
+    
+    //DBI 검사 결과 동기적 증상 패키징(motivationalSymptoms)
+    const DBIResultMotivationalSymptoms = useMemo(() => packageMotivationalSymptoms(motivationalSymptoms), [motivationalSymptoms]);
+
+
+    //DBI 검사 결과 신체적 증상(keyword, physicalSymptoms)
+    const packagePhysicalSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
+        return selectedValues.map(item => 
+            `${item.category}|${item.name}|${item.level}`
+        ).join('@');
+        }, []);
+    
+    //DBI 검사 결과 신체적 증상 패키징(physicalSymptoms)
+    const DBIResultPhysicalSymptoms = useMemo(() => packagePhysicalSymptoms(physicalSymptoms), [physicalSymptoms]);
+
+    
+    
+    //DBI 검사 결과 저장(설문 내용) 
+    const saveDBI_content= async()=>{
+    
+        if (!user) return;
+
+        try {
+            // 데이터 저장
+            const doc = await addDoc(collection(db, "diagnoseBDIresult"), {
+                // tweet,// 게시판 내용 
+                // Credential: Date.now(),//특정 시간부터 경과한 밀리초(millisecond 반환) 
+                // // 작성자 유저 닉네임:, 유저 닉네임이 없으면 익명으로 저장 
+                // username: user.displayName || "Anonymous",
+                // //트윗을 삭제하고자 할 때 트윗을 삭제할 권한이 있는 유저를 구분
+                // //트윗을 삭제하려는 유저의 ID와 여기 userID에 저장된 ID가 일치하는 확인 
+                // userId: user.uid,
+
+                // 진단 검사 결과 데이터
+
+                // 사용자 ID 
+                userID: user.uid,
+
+                // 게시판 ID
+                Credential: Date.now(),
+
+                //날짜 
+                diagnoseDate: (date.getFullYear() + "/" +
+                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
+                    ("0" + (date.getDate())).slice(-2) + "-" +
+                    ("0" + (date.getHours())).slice(-2) + ":" +
+                    ("0" + (date.getMinutes())).slice(-2) +
+                    ":" + ("0" + (date.getSeconds())).slice(-2)),
+
+                //검사결과 리스트(text)
+                DBIResultcontent,
+
+                //검사결과 리스트(score)
+                DBI_Result,
+            });
+
+            console.log(doc);
+
+        }
+
+        catch (e) {
+            console.log("firebase error:", e);
+        }
+
+    }
+
+    //DBI 검사 결과 저장(치료 키워드)
+    const saveDBI_treatment= async()=>{
+        if (!user) return;
+
+        try {
+            // 데이터 저장
+            const doc = await addDoc(collection(db, "diagnoseBDIresult_treatment_keyword"), {
+                // tweet,// 게시판 내용 
+                // Credential: Date.now(),//특정 시간부터 경과한 밀리초(millisecond 반환) 
+                // // 작성자 유저 닉네임:, 유저 닉네임이 없으면 익명으로 저장 
+                // username: user.displayName || "Anonymous",
+                // //트윗을 삭제하고자 할 때 트윗을 삭제할 권한이 있는 유저를 구분
+                // //트윗을 삭제하려는 유저의 ID와 여기 userID에 저장된 ID가 일치하는 확인 
+                // userId: user.uid,
+
+                // 진단 검사 결과 데이터
+
+                // 사용자 ID 
+                userID: user.uid,
+
+                // 게시판 ID
+                Credential: Date.now(),
+
+                //날짜 
+                diagnoseDate: (date.getFullYear() + "/" +
+                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
+                    ("0" + (date.getDate())).slice(-2) + "-" +
+                    ("0" + (date.getHours())).slice(-2) + ":" +
+                    ("0" + (date.getMinutes())).slice(-2) +
+                    ":" + ("0" + (date.getSeconds())).slice(-2)),
+
+                //검사결과 키워드 추출 정서적(EmotionalSymptoms)
+                DBIResultEmotionalSymptoms,
+
+                //검사결과 키워드 추출 인지적(CognitiveSymptoms)
+                DBIResultCognitiveSymptoms,
+                
+                //검사결과 키워드 추출 동기적(MotivationalSymptoms)
+                DBIResultMotivationalSymptoms,
+
+                //검사결과 키워드 추출 신체적(PhysicalSymptoms)
+                DBIResultPhysicalSymptoms
+
+            });
+
+            console.log(doc);
+
+        }
+
+
+        catch (e) {
+            console.log("firebase error:", e);
+        }
+    }
+    //
+
+
     //라디오버튼 클릭시 데이터 저장
     const handleRadioChange = (value: SelectedValue) => {
         setSelectedValues(prev => {
@@ -248,10 +361,11 @@ export default function Diagnose_BDI() {
                     console.log(`${value.category},${value.name}, ${value.level} `)
                 ))}
                 
-                //firebase 데이터 저장
-                saveDBI();
+                //firebase 설문검사 저장
+                saveDBI_content();
 
-                //데이터 전송
+                //firebase 설문검사 키워드 별 저장
+                saveDBI_treatment();
             }
         }
 
@@ -260,6 +374,7 @@ export default function Diagnose_BDI() {
 
     return (
         <>
+            <Header />
             {/* Page content */}
             <Container className="mt--6" fluid>
                 <Row>
@@ -375,8 +490,9 @@ export default function Diagnose_BDI() {
                                  
                     {BDI_Data.symptoms.map((symptom: Symptom) => (
                             <>
-
                             {symptom.details.map((detail: Detail, dIndex: number) => (
+                                <>
+                              <br/>
                                 <div key={dIndex}>
                                      {/* 세부 증상: 슬픔, 울음, 분노 */}
                                             <ListGroup numbered>
@@ -415,13 +531,26 @@ export default function Diagnose_BDI() {
                                             </ListGroup>
                                             
                                         </div>
+                                        </>
                                     ))}
                                </>
                             ))}
+                            <div>
+                                <br/>
+                            <Button
+                                    color="primary"
+                                    href="#pablo"
+                                    onClick={onClick}
+                                    size="=lm"
+                                >  DSM-5 검사 결과 버튼 </Button>
+                            </div>
+
+
                                     </CardBody>
+                               
                                 </Card>
-                                
                             </CardBody>
+                           
                         </Card>
                     </Col>
                 </Row>

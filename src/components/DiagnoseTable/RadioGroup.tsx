@@ -31,7 +31,6 @@ function RadioGroup({ label, children, onChange, disabled }: RadioGroupProps) {
 
   return (
     <fieldset>
-      <legend>{label}</legend>
       {/* 자식 컴포넌트들을 순회 */}
       {React.Children.map(children, (child) => {
         
