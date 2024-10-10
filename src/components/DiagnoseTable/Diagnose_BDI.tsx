@@ -18,17 +18,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 // reactstrap components
-import { Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, } from "reactstrap";
+import { Alert, Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, } from "reactstrap";
 
 // core components
 import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파일
 import chatbotImage from "../../assets/img/theme/GraidentAiRobot.jpg";
 import BDI_list from '../../../diagnose_list/BDI_list.json';
-import RadioGroup from "./RadioGroup";
-import Radio from "./Radio";
-import { addDoc, collection } from "firebase/firestore";
+import RadioGroup from "./DBI_RadioGroup";
+import Radio from "./DBI_Radio";
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { auth,db } from "@/firebase";
 import Header from "@components/Headers/Header";
+import { useNavigate } from "react-router-dom";
 
 
 interface Description {
@@ -51,7 +52,7 @@ interface BDI_list {
     symptoms: Symptom[];
 }
 
-interface SelectedValue {
+export interface SelectedValue {
     index:number;
     category: string;
     name: string;
@@ -70,8 +71,18 @@ export default function Diagnose_BDI() {
 
     const [DBI_Result, setDBI_Result]= useState(0);
 
+    //페이지 이동
+    const navigate = useNavigate();
+
     //날짜 생성
     const date = new Date();
+
+    //DBI 결과값 저장(content) ID
+    let DBI_content_id:string;
+
+    //DBI 결과값 저장(keyword) ID
+    let DBI_keyword_id:string;
+
 
     //검사 결과 score
     useEffect(() => {
@@ -83,13 +94,6 @@ export default function Diagnose_BDI() {
     const sortedSelectedValues = useMemo(() => {
         return [...selectedValues].sort((a, b) => a.index - b.index);
     }, [selectedValues]);
-
-    // const packageSelectedValues= (selectedValues: SelectedValue[]):string =>
-    //     {
-    //         return selectedValues.map(item => 
-    //             `${item.index}|${item.category}|${item.name}|${item.level}|${item.content}`
-    //           ).join('@');
-    //     }
 
 
     //증상별 데이터 정렬
@@ -202,7 +206,6 @@ export default function Diagnose_BDI() {
     
     //DBI 검사 결과 신체적 증상 패키징(physicalSymptoms)
     const DBIResultPhysicalSymptoms = useMemo(() => packagePhysicalSymptoms(physicalSymptoms), [physicalSymptoms]);
-
     
     
     //DBI 검사 결과 저장(설문 내용) 
@@ -213,18 +216,9 @@ export default function Diagnose_BDI() {
         try {
             // 데이터 저장
             const doc = await addDoc(collection(db, "diagnoseBDIresult"), {
-                // tweet,// 게시판 내용 
-                // Credential: Date.now(),//특정 시간부터 경과한 밀리초(millisecond 반환) 
-                // // 작성자 유저 닉네임:, 유저 닉네임이 없으면 익명으로 저장 
-                // username: user.displayName || "Anonymous",
-                // //트윗을 삭제하고자 할 때 트윗을 삭제할 권한이 있는 유저를 구분
-                // //트윗을 삭제하려는 유저의 ID와 여기 userID에 저장된 ID가 일치하는 확인 
-                // userId: user.uid,
-
-                // 진단 검사 결과 데이터
 
                 // 사용자 ID 
-                userID: user.uid,
+                userId: user.uid,
 
                 // 게시판 ID
                 Credential: Date.now(),
@@ -246,11 +240,14 @@ export default function Diagnose_BDI() {
 
             console.log(doc);
 
+            //content doc id 저장
+            DBI_content_id= doc.id;
         }
 
         catch (e) {
             console.log("firebase error:", e);
         }
+
 
     }
 
@@ -258,21 +255,31 @@ export default function Diagnose_BDI() {
     const saveDBI_treatment= async()=>{
         if (!user) return;
 
-        try {
-            // 데이터 저장
-            const doc = await addDoc(collection(db, "diagnoseBDIresult_treatment_keyword"), {
-                // tweet,// 게시판 내용 
-                // Credential: Date.now(),//특정 시간부터 경과한 밀리초(millisecond 반환) 
-                // // 작성자 유저 닉네임:, 유저 닉네임이 없으면 익명으로 저장 
-                // username: user.displayName || "Anonymous",
-                // //트윗을 삭제하고자 할 때 트윗을 삭제할 권한이 있는 유저를 구분
-                // //트윗을 삭제하려는 유저의 ID와 여기 userID에 저장된 ID가 일치하는 확인 
-                // userId: user.uid,
+        //치료 키워드 갖고 오기
+        const tweetQuery = query(
+            collection(db, "diagnoseBDIresult_treatment_keyword"),
+            /*
+                => where("userId", "==", user?.uid), 
+                이러한 필터 명령어를 firestore에 알려야 함
+                오류에서 제공하는 url 사이트로 이동
+                */
+            where("userId", "==", user?.uid),
+        );
+    
+    
+        const snapshot = await getDocs(tweetQuery);
 
+        //DBI 검사 결과가 없으면 새로 데이터 저장
+        if(snapshot.empty)
+        {
+            try {
+                // 데이터 저장
+                const doc = await addDoc(collection(db, "diagnoseBDIresult_treatment_keyword"), {
+    
                 // 진단 검사 결과 데이터
 
                 // 사용자 ID 
-                userID: user.uid,
+                userId: user.uid,
 
                 // 게시판 ID
                 Credential: Date.now(),
@@ -297,18 +304,60 @@ export default function Diagnose_BDI() {
                 //검사결과 키워드 추출 신체적(PhysicalSymptoms)
                 DBIResultPhysicalSymptoms
 
-            });
+                });
+    
+                console.log("new 데이터 save");
+                //DBI keyworld id 저장
+                DBI_keyword_id= doc.id
+    
+            }
+    
+            catch (e) {
+                console.log("firebase error:", e);
+            }
 
-            console.log(doc);
 
         }
 
+        //DBI 검사 결과 있으면 업데이트 진행
+        else
+        {
 
-        catch (e) {
-            console.log("firebase error:", e);
+            try{
+                const doc_id = snapshot.docs[0].id
+
+                //서로 다른 값인 경우 데이터 저장
+                const docRef = doc(db, "diagnoseBDIresult_treatment_keyword",doc_id);
+    
+                // document 업데이트
+                await updateDoc(docRef, {
+                     //검사결과 키워드 추출 정서적(EmotionalSymptoms)
+                     DBIResultEmotionalSymptoms,
+    
+                     //검사결과 키워드 추출 인지적(CognitiveSymptoms)
+                     DBIResultCognitiveSymptoms,
+                     
+                     //검사결과 키워드 추출 동기적(MotivationalSymptoms)
+                     DBIResultMotivationalSymptoms,
+     
+                     //검사결과 키워드 추출 신체적(PhysicalSymptoms)
+                     DBIResultPhysicalSymptoms
+                });
+    
+                DBI_keyword_id=doc_id;
+                console.log("업데이트 진행");
+            }
+
+            catch(e)
+            {
+                console.log(e);
+            }
+            
         }
+
+        //페이지 이동(content/keyword)
+        navigate(`/admin/Diagnose_DBI/result/${DBI_content_id}/${DBI_keyword_id}`);
     }
-    //
 
 
     //라디오버튼 클릭시 데이터 저장
@@ -512,6 +561,9 @@ export default function Diagnose_BDI() {
 
                                                 }}
                                             >
+                                                <h1>
+                                                    {`${detail.index}번 째 질문`}
+                                                  </h1>
                                                 {detail.description.map((desc: Description, index: number) => (
                                                      <ListGroupItem>
                                                
