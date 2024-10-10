@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 // reactstrap components
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, } from "reactstrap";
+import { Alert, Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, Spinner, } from "reactstrap";
 
 // core components
 import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파일
@@ -13,6 +13,7 @@ import Header from "@components/Headers/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { SelectedValue } from "./Diagnose_BDI";
 import useDidMountEffect from "@components/hooks/useDidMountEffect";
+import axios from "axios";
 
 interface DBIResultContent
 {
@@ -40,6 +41,11 @@ export default function Result_Diagnose_BDI() {
     // 현재 유저를 불러오기 
     const user = auth.currentUser;
 
+    //데이터 로딩
+    const [isLoading, setIsLoading]= useState(false);
+
+    //gpt api 결과값 저장
+    const [DBI_resultGPTAPIValue,setDBI_resultGPTAPIValue] = useState<string>()
     //데이터 저장(content object)
     const [Object_DBI_resultValuesContent, Object_setDBI_resultValuesContent] = useState<DBIResultContent>();
 
@@ -65,6 +71,12 @@ export default function Result_Diagnose_BDI() {
     const [DBI_SymptomsMotivationalDataParsing, setDBI_SymptomsMotivationalDataParsing] =useState<DBIResultContentSurvey[]>([]);
     const [DBI_SymptomsPhysicalDataParsing, setDBI_SymptomsPhysicalDataParsing] =useState<DBIResultContentSurvey[]>([]);
     
+    //gpt 프롬프트(BDI 검사 결과)
+    
+    //const PROMPT_TEXT_System ="당신은 심리 상담사 역할을 하고 있으며, {한 명의 내담자에게} 우울증 진단 결과를 온화하고 이해하기 쉽게 설명하는 역할을 맡고 있습니다. 내담자가 벡 우울 척도(BDI) 검사 결과를 가지고 왔고, 이를 바탕으로 진단을 내려야 합니다. 상담사는 전문적인 진단 용어를 사용하면서도 내담자가 부담을 느끼지 않도록 부드러운 말투를 사용합니다. 진단 내용은 우울증의 정서적, 인지적, 동기적, 신체적 측면을 다루며, 그에 맞는 심리 치료 방안을 안내합니다.";
+
+    const PROMPT_TEXT_System ="안녕";
+
     //페이지 이동
     const navigate = useNavigate();
 
@@ -100,33 +112,90 @@ export default function Result_Diagnose_BDI() {
    }
    }
 
-      //DBI 검사 결과(keyword) 갖고 오기
-      const load_DBI_Result_keyword= async()=>{
-        if (!user) return;
+    //DBI 검사 결과(keyword) 갖고 오기
+    const load_DBI_Result_keyword= async()=>{
+    if (!user) return;
 
-        //load_DBI_Result_keyword 값 불러오기
-        
-         //타입이 string인지 체크
-      if (typeof DBI_keyword_id === "string") {
-        // 'users' 컬렉션에서 특정 문서 ID를 가진 문서에 대한 참조 생성
-        const docRef = doc(db, "diagnoseBDIresult_treatment_keyword", DBI_keyword_id);
+    //load_DBI_Result_keyword 값 불러오기
+    
+        //타입이 string인지 체크
+    if (typeof DBI_keyword_id === "string") {
+    // 'users' 컬렉션에서 특정 문서 ID를 가진 문서에 대한 참조 생성
+    const docRef = doc(db, "diagnoseBDIresult_treatment_keyword", DBI_keyword_id);
 
-        // 참조를 사용하여 문서 정보 가져오기
-        const docSnap = await getDoc(docRef);
+    // 참조를 사용하여 문서 정보 가져오기
+    const docSnap = await getDoc(docRef);
 
-        //해당 쿼리에 대한 모든 문서 반환 
-        if (docSnap.exists()) {
-        const doc_BDI_Result = () => {
+    //해당 쿼리에 대한 모든 문서 반환 
+    if (docSnap.exists()) {
+    const doc_BDI_Result = () => {
 
-            const { DBIResultCognitiveSymptoms, DBIResultEmotionalSymptoms,DBIResultMotivationalSymptoms,DBIResultPhysicalSymptoms } = docSnap.data();
+        const { DBIResultCognitiveSymptoms, DBIResultEmotionalSymptoms,DBIResultMotivationalSymptoms,DBIResultPhysicalSymptoms } = docSnap.data();
 
-            return { DBIResultCognitiveSymptoms, DBIResultEmotionalSymptoms,DBIResultMotivationalSymptoms,DBIResultPhysicalSymptoms }
+        return { DBIResultCognitiveSymptoms, DBIResultEmotionalSymptoms,DBIResultMotivationalSymptoms,DBIResultPhysicalSymptoms }
+    }
+
+    setObject_DBI_resultValuesKeyword(doc_BDI_Result);
+    }
+}
+    }
+
+    // gpt api 호출
+    const DBI_resultGPTAPI = async () => {
+
+        if (DBI_surveyDataParsing) {
+            // 키값 지정 
+            const apiKey = import.meta.env.VITE_REACT_APP_OPENAI_API_KEY;
+            // 예외 처리 
+            if (!apiKey) {
+                console.error("OpenAI API key is not set in environment variables");
+                return;
+            }
+
+            try {
+                const response = await axios.post(
+                    // url로 가져오는 방식
+                    'https://api.openai.com/v1/chat/completions',
+                    {
+                        // model: 'gpt-3.5-turbo',
+                        model: 'gpt-4o',
+                        messages: [
+                            // 프롬프트(역할) 지정 
+                            { role: 'system', content: PROMPT_TEXT_System },
+                            // 일기 데이터
+                            { role: 'user', content: "안녕하세요." },
+                        ],
+                        // 답변 토큰 지정, 제한 (10토큰이상으로 오는 답변 짤리는 것)
+                        //max_tokens: 16384  , //대략 5글자 
+                        max_tokens: 20,
+                        temperature: 0.5, //창의적인 대답의 정도(0.0~1.0)
+                    },
+
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                // choices[0].message: gpt 답변
+                const analysis = response.data.choices[0].message?.content.trim() || "No analysis result.";
+
+                console.log(analysis);
+
+                setDBI_resultGPTAPIValue(analysis);
+
+                // 감정 분석 결과 데이터 저장
+
+            } catch (error) {
+                confirm(`Error:${error}` );
+                console.error("Error analyzing diary:", error);
+            }
+
         }
+    };
 
-        setObject_DBI_resultValuesKeyword(doc_BDI_Result);
-        }
-   }
-   }
 
    //content, keyword 불러오기
    useEffect(()=>{
@@ -170,114 +239,124 @@ export default function Result_Diagnose_BDI() {
             });
 
             setDBI_surveyDataParsing(DBI_contentData);
+
+
+            //gpt api 호출
+            DBI_resultGPTAPI();
         }
 
     },[DBI_surveyData])
 
   //DBI_resultKeyword  
   //DBIResultCognitiveSymptoms,DBIResultEmotionalSymptoms,DBIResultMotivationalSymptoms,DBIResultPhysicalSymptoms 값 저장
-  useDidMountEffect(()=>{
-    console.log("Object_DBI_resultValuesKeyword 렌더링");
+    useDidMountEffect(()=>{
+        console.log("Object_DBI_resultValuesKeyword 렌더링");
 
-    if (typeof Object_DBI_resultValuesKeyword?.DBIResultCognitiveSymptoms === "string") {
-        setDBI_Symptoms_Cognitive(Object_DBI_resultValuesKeyword?.DBIResultCognitiveSymptoms);
-    }
-    if (typeof Object_DBI_resultValuesKeyword?.DBIResultEmotionalSymptoms === "string") {
-        setDBI_Symptoms_Emotional(Object_DBI_resultValuesKeyword?.DBIResultEmotionalSymptoms);
-    }
-    if (typeof Object_DBI_resultValuesKeyword?.DBIResultMotivationalSymptoms === "string") {
-        setDBI_Symptoms_Motivational(Object_DBI_resultValuesKeyword?.DBIResultMotivationalSymptoms);
-    }
-    if (typeof Object_DBI_resultValuesKeyword?.DBIResultPhysicalSymptoms === "string") {
-        setDBI_Symptoms_Physical(Object_DBI_resultValuesKeyword?.DBIResultPhysicalSymptoms);
-    }
-    },[Object_DBI_resultValuesKeyword])
- 
-
-      //DBI_resultkeyword(Cognitive,Emotional,Motivational,Physical) parsing
-      useDidMountEffect(()=>{
-        console.log("Object_DBI_resultValuesKeyword 파싱");
-
-        if (DBI_Symptoms_Cognitive) {
-            // 데이터 파싱
-            const DBI_surveyDataParsing = DBI_Symptoms_Cognitive.split('@');
-
-            const DBI_cognitiveKeywordtData = DBI_surveyDataParsing.map((data) => {
-                const parsingData = data.split('|');
- 
-                console.log("DBI_surveyDataParsing 파싱")
-                return {
-                    category: parsingData[0],
-                    name: parsingData[1],
-                    level: parsingData[2],
-                }
-            });
-
-            setDBI_SymptomsCognitiveDataParsing(DBI_cognitiveKeywordtData);
+        if (typeof Object_DBI_resultValuesKeyword?.DBIResultCognitiveSymptoms === "string") {
+            setDBI_Symptoms_Cognitive(Object_DBI_resultValuesKeyword?.DBIResultCognitiveSymptoms);
         }
-
-
-        if (DBI_Symptoms_Emotional) {
-            // 데이터 파싱
-            const DBI_surveyDataParsing = DBI_Symptoms_Emotional.split('@');
-
-            const DBI_emotionalKeywordtData = DBI_surveyDataParsing.map((data) => {
-                const parsingData = data.split('|');
- 
-                console.log("DBI_surveyDataParsing 파싱")
-                return {
-                    category: parsingData[0],
-                    name: parsingData[1],
-                    level: parsingData[2],
-                }
-            });
-
-            setDBI_SymptomsEmotionalDataParsing(DBI_emotionalKeywordtData);
+        if (typeof Object_DBI_resultValuesKeyword?.DBIResultEmotionalSymptoms === "string") {
+            setDBI_Symptoms_Emotional(Object_DBI_resultValuesKeyword?.DBIResultEmotionalSymptoms);
         }
-
-
-        if (DBI_Symptoms_Motivational) {
-            // 데이터 파싱
-            const DBI_surveyDataParsing = DBI_Symptoms_Motivational.split('@');
-
-            const DBI_motivationalKeywordtData = DBI_surveyDataParsing.map((data) => {
-                const parsingData = data.split('|');
- 
-                console.log("DBI_surveyDataParsing 파싱")
-                return {
-                    category: parsingData[0],
-                    name: parsingData[1],
-                    level: parsingData[2],
-                }
-            });
-
-            setDBI_SymptomsMotivationalDataParsing(DBI_motivationalKeywordtData);
+        if (typeof Object_DBI_resultValuesKeyword?.DBIResultMotivationalSymptoms === "string") {
+            setDBI_Symptoms_Motivational(Object_DBI_resultValuesKeyword?.DBIResultMotivationalSymptoms);
         }
-
-        console.log("Object_DBI_resultValuesKeyword 파싱");
-
-        if (DBI_Symptoms_Physical) {
-            // 데이터 파싱
-            const DBI_surveyDataParsing = DBI_Symptoms_Physical.split('@');
-
-            const DBI_physicalKeywordtData = DBI_surveyDataParsing.map((data) => {
-                const parsingData = data.split('|');
- 
-                console.log("DBI_surveyDataParsing 파싱")
-                return {
-                    category: parsingData[0],
-                    name: parsingData[1],
-                    level: parsingData[2],
-                }
-            });
-
-            setDBI_SymptomsPhysicalDataParsing(DBI_physicalKeywordtData);
+        if (typeof Object_DBI_resultValuesKeyword?.DBIResultPhysicalSymptoms === "string") {
+            setDBI_Symptoms_Physical(Object_DBI_resultValuesKeyword?.DBIResultPhysicalSymptoms);
         }
+        },[Object_DBI_resultValuesKeyword])
 
-    },[DBI_Symptoms_Cognitive])
+    //DBI_resultkeyword(Cognitive,Emotional,Motivational,Physical) parsing
+    useDidMountEffect(()=>{
+    console.log("Object_DBI_resultValuesKeyword 파싱");
+
+    if (DBI_Symptoms_Cognitive) {
+        // 데이터 파싱
+        const DBI_surveyDataParsing = DBI_Symptoms_Cognitive.split('@');
+
+        const DBI_cognitiveKeywordtData = DBI_surveyDataParsing.map((data) => {
+            const parsingData = data.split('|');
+
+            console.log("DBI_surveyDataParsing 파싱")
+            return {
+                category: parsingData[0],
+                name: parsingData[1],
+                level: parsingData[2],
+            }
+        });
+
+        setDBI_SymptomsCognitiveDataParsing(DBI_cognitiveKeywordtData);
+    }
 
 
-    // 데이터 불러오기
+    if (DBI_Symptoms_Emotional) {
+        // 데이터 파싱
+        const DBI_surveyDataParsing = DBI_Symptoms_Emotional.split('@');
+
+        const DBI_emotionalKeywordtData = DBI_surveyDataParsing.map((data) => {
+            const parsingData = data.split('|');
+
+            console.log("DBI_surveyDataParsing 파싱")
+            return {
+                category: parsingData[0],
+                name: parsingData[1],
+                level: parsingData[2],
+            }
+        });
+
+        setDBI_SymptomsEmotionalDataParsing(DBI_emotionalKeywordtData);
+    }
+
+
+    if (DBI_Symptoms_Motivational) {
+        // 데이터 파싱
+        const DBI_surveyDataParsing = DBI_Symptoms_Motivational.split('@');
+
+        const DBI_motivationalKeywordtData = DBI_surveyDataParsing.map((data) => {
+            const parsingData = data.split('|');
+
+            console.log("DBI_surveyDataParsing 파싱")
+            return {
+                category: parsingData[0],
+                name: parsingData[1],
+                level: parsingData[2],
+            }
+        });
+
+        setDBI_SymptomsMotivationalDataParsing(DBI_motivationalKeywordtData);
+    }
+
+    console.log("Object_DBI_resultValuesKeyword 파싱");
+
+    if (DBI_Symptoms_Physical) {
+        // 데이터 파싱
+        const DBI_surveyDataParsing = DBI_Symptoms_Physical.split('@');
+
+        const DBI_physicalKeywordtData = DBI_surveyDataParsing.map((data) => {
+            const parsingData = data.split('|');
+
+            console.log("DBI_surveyDataParsing 파싱")
+            return {
+                category: parsingData[0],
+                name: parsingData[1],
+                level: parsingData[2],
+            }
+        });
+
+        setDBI_SymptomsPhysicalDataParsing(DBI_physicalKeywordtData);
+    }
+
+},[DBI_Symptoms_Cognitive])
+
+ //gpt api 결과값
+ useDidMountEffect(()=>{
+
+    if(DBI_resultGPTAPIValue)
+    {
+        setIsLoading(true);
+    }
+    
+ },[DBI_resultGPTAPIValue])
 
 
     return (
@@ -389,8 +468,9 @@ export default function Result_Diagnose_BDI() {
 
                                     <CardBody>
                                         <>
-
-                                        <div>
+                                        {isLoading?
+                                        <>
+                                          <div>
                                             {  `DBI_resultScore: ${DBI_resultScore}`}
                                         </div>
                                      {DBI_surveyDataParsing.map((data)=>{
@@ -449,7 +529,28 @@ export default function Result_Diagnose_BDI() {
                                         </>
                                         )
                                      })}
+
+                                     <div>
+                                        진단 결과: 
+                                        {DBI_resultGPTAPIValue}
+                                     </div>
                                       <br/>
+                                        </>
+                                        :
+                                        <>
+                                        <div>
+                                      <Spinner
+                                        color="primary"
+                                        style={{
+                                        height: '3rem',
+                                        width: '3rem'
+                                        }}
+                                    >
+                                        Loading...
+                                    </Spinner> 결과가 나오고 있습니다. 잠시만 기달려 주세요.. 
+                                      </div>
+                                        </>}
+                                      
                                         </>
                                      
 
