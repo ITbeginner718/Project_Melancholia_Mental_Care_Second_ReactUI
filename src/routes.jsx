@@ -35,6 +35,7 @@ import Diagnose_DSM5 from "@components/DiagnoseTable/Diagnose_DSM5.tsx";
 import Result_Diagnose_DSM5 from "@components/DiagnoseTable/Result_DSM5.tsx";
 import Diagnose_BDI from "@components/DiagnoseTable/Diagnose_BDI.tsx";
 import Result_Diagnose_BDI from "@components/DiagnoseTable/Result_DBI.tsx";
+import ChatbotCounsel from "@components/ChatBot/chatbotCounsel.tsx";
 
 const routes = [
   {
@@ -47,7 +48,7 @@ const routes = [
 
   {
     path: "/chatbot",
-    name: "AI 챗봇",
+    name: "챗봇",
     icon: "ni ni-chat-round text-info",
     component: <Chat />,
     layout: "/admin",
@@ -56,7 +57,7 @@ const routes = [
   // 진단 검사
   {
     path: "/chatbot_diagnose",
-    name: "AI 우울증 진단",
+    name: "우울증 진단",
     icon: "ni ni-sound-wave text-pink",
     component: <ChatDiagnose />,
     layout: "/admin",
@@ -154,6 +155,15 @@ const routes = [
     component: <Result_Diagnose_BDI />,
     layout: "/admin",
   },
+
+  //챗봇 상담
+  {
+    path: "/ChatbotCounsel/:keyword",
+    name: "Anonymous",
+    component: <ChatbotCounsel />,
+    layout: "/admin",
+  },
+  
 
 
   {

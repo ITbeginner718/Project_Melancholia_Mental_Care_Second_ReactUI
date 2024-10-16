@@ -45,14 +45,23 @@ import useDidMountEffect from "@components/hooks/useDidMountEffect.js";
 
 
   const List=[
-    {code:"A",result:true, content:`A항의 조건을 만족합니다.` },
-    {code:"B",result:true, content:"B항의 조건을 만족합니다." },
-    {code:"C",result:true, content:"C항의 조건을 만족합니다." },
-    {code:"D",result:true, content:"D항의 조건을 만족합니다." },
-    {code:"A",result:false, content:"A항의 조건을 만족하지 못합니다." },
-    {code:"B",result:false, content:"B항의 조건을 만족하지 못합니다." },
-    {code:"C",result:false, content:"C항의 조건을 만족하지 못합니다." },
-    {code:"D",result:false, content:"D항의 조건을 만족하지 못합니다." }
+    {code:"A",result:true, content:`A항의 리스트 중에 첫 번째 또는 두 번째 항목을 선택하셨습니다. 또한,  
+        첫 번째 또는 두 번째를 항목을 포함하여 5개 이상 선택하셨습니다. => A항 조건을 만족합니다. ` },
+    {code:"B",result:true, content:`A항에서 선택한 증상들이 일상생활 또는 경제활동에 영향을 상당히 끼치고 있는 것에 체크하셨습니다.
+     => B항 조건을 만족합니다.` },
+    {code:"C",result:true, content:`A항에서 선택한 증상들이 현재 특정 약물 또는 질병에 영향을 받은 것이 아닌 것에 체크하셨습니다.
+        => C항 조건을 만족합니다. ` },
+    {code:"D",result:true, content:`A항에서 선택한 증상들이 다른 정신 질환에 의해 발현된 증상이 아닌 것에 체크하셨습니다.
+        => D항 조건을 만족합니다. ` },
+
+    {code:"A",result:false, content:`A항의 리스트 중에 첫 번째 또는 두 번째 항목 중 단 하나라도 필수적으로 선택되지 않았거나,  
+        첫 번째 또는 두 번째를 항목을 포함하여 5개 미만으로 선택하였습니다. => A항 조건을 만족하지 못합니다.. ` },
+    {code:"B",result:false, content:`A항에서 선택한 증상들이 일상생활 또는 경제활동에 영향을 상당히 끼치고 있는 것에 체크하지 않으셨습니다.
+     A항의 항목들이 일상생활 또는 경제활동에 영향을 상당히 끼치고 있어야 합니다. => B항 조건을 만족하지 못합니다.` },
+    {code:"C",result:false, content:`A항에서 선택한 증상들이 현재 특정 약물 또는 질병에 영향을 받은 것이 아닌 것에 체크하지 않으셨습니다.
+        우울증 증상을 유발하는 약물을 중단하거나 질병을 치료한 후에도 A항의 증상들이 2주 이상 지속되어야 C항을 만족합니다. => C항의 조건을 만족하지 못합니다.` },
+    {code:"D",result:false, content:`A항에서 선택한 증상들이 다른 정신 질환에 의해 발현된 증상이 아닌 것에 체크하지 않으셨습니다.
+        다른 정신 질환이 치료가 되어도 A항의 증상들이 2주 이상 지속되어야 D항을 만족합니다. => D항의 조건을 만족하지 못합니다.` }
   ]
 
 
@@ -268,9 +277,9 @@ export default function Result_Diagnose_DSM5() {
     return condition1 && (condition2 && (condition3 && condition4)) ;
     };
 
-useEffect(()=>{
-        parseQueryString();
-},[]);
+    useEffect(()=>{
+            parseQueryString();
+    },[]);
     
     //useEffect를 firebase에 isSatisfied값이 true-false 무한반복으로
     //변경됨 그래서 useDidMountEffect사용 해야함
@@ -283,6 +292,7 @@ useEffect(()=>{
     //검사 결과값 들어오면 firebase에 저장
     useDidMountEffect(()=>{
         console.log("이벤트 발생 isSatisfied state_first:", isSatisfied);
+
        save_update_DSM5Result();
     },[isSatisfied])
     
@@ -384,33 +394,42 @@ useEffect(()=>{
 
                             <CardBody>
                                 {/* 검사표 결과 */}
+                                <Alert color="primary">
+                
+                                DSM5 진단 결과: { isSatisfied ?(<span>조건이 만족합니다.</span>):(<span>조건이 불만족합니다..</span>) }
+                                </Alert>
 
                                 <Card body>
-                            <CardTitle tag="h5">
+                            <CardTitle tag="h3">
                                 DSM5 진단 기준
                             </CardTitle>
                             <CardText>
                             <div> A. 다음 증상 가운데 1) 또는 2) 문항을 반드시 포함하여 5개(또는 그 이상) 증상이 연속 2주간 지속해야함 </div>
+                            <div>
+                            - 1) 문항: 거의 하루 종일 우울한 기분이 거의 매일 이어지며, 이는 주관적 느낌 (예컨대 슬픔, 공허감, 아무런 희망이 없음)이나 객관적 관찰 소견(예컨대, 자주 눈물을 흘림)으로 확인된다.
+                     
+                            </div>
+                            <div>
+                            - 2) 문항: 거의 하루 종일 거의 모든 활동에 대한 흥미나 즐거움 감소된 상태가 거의 매일 이어짐.
+                            </div>
+
+                            <br></br>
+                            <div> ❗B항, C항, D항이 반드시 포함되어야 함 </div>
                             <div> B. A항의 증상이 사회적, 직업적, 또는 다른 중요한 기능 영역에서 임상적으로 현저한 고통이나 손상을 초래해야함</div>
                             <div> C. A항의 증상이 약물 복용이나 기타 질병에 의한 영향이 아님</div>
                             <div>  D. A항의 증상이 조현병 등 다른 정신질환에 의한 영향이 아님</div>
                             </CardText>
-                        
                         </Card>
 
                         <div>
-                        <Alert color="primary">
-                
-                        { isSatisfied ?(<span>조건이 만족합니다.</span>):(<span>조건이 불만족합니다..</span>) }
-                        </Alert>
-                     
 
                         <ListGroup>
-
+                        
+                        <br></br>
                         {feedbackList.map((feedback)=>(
                             <>
                              <ListGroupItem>
-                                <ListGroupItemHeading>
+                                <ListGroupItemHeading tag="h3">
                                 {feedback.code}조건:{(feedback.result)?"만족":"불만족"}
                                 </ListGroupItemHeading>
                                 <ListGroupItemText>

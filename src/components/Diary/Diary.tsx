@@ -18,7 +18,6 @@ export default function Diary({ id, diaryTitle, diaryDate, diaryContent, userID,
     const [isLoading, setIsLoading] = useState(false);
 
 
-
     const onDelete = async () => {
 
         //정말 삭제 할 것인지 사용자 확인 

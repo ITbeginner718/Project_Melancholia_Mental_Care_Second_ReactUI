@@ -18,7 +18,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 // reactstrap components
-import { Button, Card, CardBody, CardHeader, Col, Container, FormGroup, Input, Row, Form, Table, CardFooter, Pagination, PaginationItem, PaginationLink, ListGroup, ListGroupItem } from "reactstrap";
+import { Button, Card, CardBody, CardHeader, Col, Container, FormGroup, Input, Row, Form, Table, CardFooter, Pagination, PaginationItem, PaginationLink, ListGroup, ListGroupItem, Alert, CardText, CardTitle, Badge } from "reactstrap";
 
 // core components
 // 윗쪽 
@@ -27,6 +27,7 @@ import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파�
 import chatbotImage from "../../assets/img/theme/GraidentAiRobot.jpg";
 import { useNavigate } from "react-router-dom";
 import DSM5CheckBox from "@components/DiagnoseTable/DSM5_CheckBox";
+import DSM5_B_Section from "./DSM5_B_Section.js";
 
 
 // 체크박스 속성 타입 설정
@@ -84,13 +85,13 @@ export default function Diagnose_DSM5() {
         fetchDSM5List();
     }, []);
 
-    // A문항
+    // A항
     const questionA = DSM5_LIST.filter(data => data.code == "A");
-    // B문항
+    // B항
     const questionB = DSM5_LIST.filter(data => data.code == "B");
-    // C문항
+    // C항
     const questionC = DSM5_LIST.filter(data => data.code == "C");
-    // D문항
+    // D항
     const questionD = DSM5_LIST.filter(data => data.code == "D");
 
     // 체크 박스 선택 이벤트 (useCallback)
@@ -240,7 +241,7 @@ export default function Diagnose_DSM5() {
                                                     href="#pablo"
                                                     onClick={onClickCheckBox}
                                                     size="=lm"
-                                                >  DSM-5 검사 결과 버튼
+                                                >  DSM-5 검사 설문지 제출
                                                 </Button>
                                             </Col>
                                         </Row>
@@ -249,7 +250,14 @@ export default function Diagnose_DSM5() {
                                     <CardBody>
 
                                     <ListGroup>
-                                    <span>A항</span>
+                                    <Card body>
+                                    <CardTitle tag="h2">
+                                    A항 입니다. 
+                                    </CardTitle>
+                                    <CardText>
+                                    <h3>해당 리스트에서<span style={{color:"#ff0000"}}> 연속 2주 이상</span> 지속되는 항목들을 선택해주세요. </h3>
+                                    </CardText>
+                                    </Card>
                                     {/* 검사표 삽입 */}
                                     {questionA.map((list) => (
                                            <ListGroupItem>
@@ -261,7 +269,16 @@ export default function Diagnose_DSM5() {
                                     ))}
 
                                     <br />
-                                    <span>B항</span>
+                                    <Card body>
+                                    <CardTitle tag="h2">
+                                    B항 입니다. 
+                                    </CardTitle>
+                                    <CardText>
+                                    <h3>A항에서 선택한 증상들이 일상 생활에 직접적으로 영향을 끼치고 경제적 생활을 하면서 정신적 고통을
+                                        느끼고 있거나, 일을 할 수 없는 상태이면 체크해주세요. </h3>
+                                    </CardText>
+                                    </Card>
+
                                     {questionB.map((list) => (
                                          <ListGroupItem>
                                             <DSM5CheckBox
@@ -273,7 +290,25 @@ export default function Diagnose_DSM5() {
                                     ))}
 
                                     <br />
-                                    <span>C항</span>
+                                   <Card body>
+                                    <CardTitle tag="h2">
+                                    C항 입니다. 
+                                    </CardTitle>
+
+                                    <CardText>
+                                    우울증을 유발하는 대표적인 약물, 질병입니다. 꼭 확인 후 체크 여부를 결정하세요. 
+                                    <div>
+                                    <DSM5_B_Section/>
+                                    </div>
+                             
+                                    </CardText>
+
+                                    <CardText>
+                                    <h3>A항에서 선택한 증상들이 우울증을 유발하는 어떤 약물을 먹고난 이후에 발현이 되었거나,
+                                        기타 다른 질병을 앓고난 이후에 증상이 <span style={{color:"#ff0000"}}> 나타난 것이 아니라면 체크해주세요.</span></h3>
+
+                                    </CardText>
+                                    </Card>
                                     {questionC.map((list) => (
                                            <ListGroupItem>
                                         <DSM5CheckBox
@@ -285,7 +320,14 @@ export default function Diagnose_DSM5() {
                                     ))}
 
                                     <br />
-                                    <span>D항</span>
+                                    <Card body>
+                                    <CardTitle tag="h2">
+                                    D항 입니다. 
+                                    </CardTitle>
+                                    <CardText>
+                                    <h3>A항에서 선택한 증상들이 다른 정신 질환에 의해 <span style={{color:"#ff0000"}}>영향을 받은 것이 아니라면 체크해주세요.</span> </h3>
+                                    </CardText>
+                                    </Card>
                                     {questionD.map((list) => (
                                          <ListGroupItem>
                                         <DSM5CheckBox
@@ -300,8 +342,16 @@ export default function Diagnose_DSM5() {
 
                                     </CardBody>
                                 </Card>
-                                
+                                <br/>
+                                <Button
+                                color="primary"
+                                href="#pablo"
+                                onClick={onClickCheckBox}
+                                size="=lm"
+                            >  DSM-5 검사 설문지 제출
+                            </Button>
                             </CardBody>
+   
                         </Card>
                     </Col>
                 </Row>

@@ -341,8 +341,16 @@ export default function Diagnose_BDI() {
                      DBIResultMotivationalSymptoms,
      
                      //검사결과 키워드 추출 신체적(PhysicalSymptoms)
-                     DBIResultPhysicalSymptoms
-                });
+                     DBIResultPhysicalSymptoms,
+
+                     //날짜 
+                    diagnoseDate: (date.getFullYear() + "/" +
+                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
+                    ("0" + (date.getDate())).slice(-2) + "-" +
+                    ("0" + (date.getHours())).slice(-2) + ":" +
+                    ("0" + (date.getMinutes())).slice(-2) +
+                    ":" + ("0" + (date.getSeconds())).slice(-2)),
+                    });
     
                 DBI_keyword_id=doc_id;
                 console.log("업데이트 진행");

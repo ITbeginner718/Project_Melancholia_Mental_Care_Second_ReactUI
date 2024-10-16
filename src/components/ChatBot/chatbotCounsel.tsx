@@ -8,6 +8,9 @@ import { auth, db } from "../../firebase";
 import { addDoc, collection } from 'firebase/firestore';
 import ChatbotFeedback from './ChatbotFeedback';
 import ProfileImageChatbot from "../../assets/img/theme/GraidentAiRobot.jpg";
+import Header from '@components/Headers/Header';
+import { Button, Card, CardBody, CardHeader, Col, Container, Row } from 'reactstrap';
+import { useParams } from 'react-router-dom';
 
 // 메시지 타입 선언
 type Messages = {
@@ -41,11 +44,15 @@ const TypingEffect = ({ anymation_text, speed }: TypingEffectProps) => {
 };
 
 
-export default function Chatbot() {
+export default function ChatbotCounsel() {
 
     // 현재 유저를 불러오기 
     const user = auth.currentUser;
 
+    // 게시판 정보 id값 가져오기
+    const { keyword } = useParams();
+
+  
     //Socket io 
     const [socket, setSocket] = useState<Socket | null>(null);
     // 현재 입력 필드에 입력된 메세지 필드
@@ -67,6 +74,19 @@ export default function Chatbot() {
     // 사용자 이름
     const [userName, setUserName] = useState('');
 
+    // 상담 주제 가져오기
+    const [topic, setTopic]= useState<string>();
+
+
+   
+
+    
+    useEffect(()=>{
+    if(keyword!=undefined)
+            {
+                setTopic(decodeURI(decodeURIComponent(keyword)) ) 
+            }
+    },[])
 
     // 컴포넌트가 마운트될 때 한 번만 실행되며, "시작" 메시지를 서버에 보냅니다.
     useEffect(() => {
@@ -237,44 +257,70 @@ export default function Chatbot() {
 
     return (
         <>
-            <div className="App">
-                <div className="chat-container">
-                    <ul className="message-list">
-                        {/* messages 배열을 순회하면서 각 메시지를 출력합니다. map 함수는 msg와 index를 받아 JSX 요소를 반환합니다. */}
-                        {messages.map((msg, index) => (
-                            <li key={index} className="message-item">
-                                {msg.type === 'received' && <img src={ProfileImageChatbot} alt="Receiver Profile" className="profile-pic " />}
+        <Header />
+            {/* Page content */}
+            <Container className="mt--6" fluid>
+                    <Card className="bg-secondary shadow">
+                    <CardHeader className="bg-white border-0">
+                        <Row className="align-items-center">
+                        <Col xs="8">
+                            <h3 className="mb-0">AI감성 챗봇</h3>
+                        </Col>
+                        <Col className="text-right" xs="4">
+                            <Button
+                            color="primary"
+                            href="#pablo"
+                            onClick={(e) => e.preventDefault()}
+                            size="sm"
+                            >
+                            Settings
+                            </Button>
+                        </Col>
+                        </Row>
+                    </CardHeader>
 
-                                <div className={msg.type === 'received' ? 'message received' : 'message sent'}>
+                    <CardBody>
+
+                        <div>
+                            {topic}
+                        </div>
+
+                        {/* 챗봇 컴포넌트 */}
+                        <div className="App">
+                        <div className="chat-container">
+                            <ul className="message-list">
+                                {/* messages 배열을 순회하면서 각 메시지를 출력합니다. map 함수는 msg와 index를 받아 JSX 요소를 반환합니다. */}
+                                {messages.map((msg, index) => (
+                                    <li key={index} className="message-item">
+                                        {msg.type === 'received' && <img src={ProfileImageChatbot} alt="Receiver Profile" className="profile-pic " />}
+
+                                        <div className={msg.type === 'received' ? 'message received' : 'message sent'}>
 
 
-                                    {/* 텍스트 출력 AI 챗봇이 얘기할 때만 애니메이션 구현 */}
-                                    {msg.type === 'received' && <TypingEffect key={index} anymation_text={msg.text} speed={20} />}
+                                            {/* 텍스트 출력 AI 챗봇이 얘기할 때만 애니메이션 구현 */}
+                                            {msg.type === 'received' && <TypingEffect key={index} anymation_text={msg.text} speed={20} />}
 
-                                    {msg.type === 'sent' && (ProfileImageUser ? <img src={ProfileImageUser} alt="Sender Profile" className="profile-pic" /> :
-                                    <svg className="profile-pic" fill="none" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    </svg>)}
-                                    
-                                    {msg.type === 'sent' && <span className="message-content">{msg.text}</span>}
+                                            {msg.type === 'sent' && (ProfileImageUser ? <img src={ProfileImageUser} alt="Sender Profile" className="profile-pic" /> :
+                                            <svg className="profile-pic" fill="none" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>)}
+                                            
+                                            {msg.type === 'sent' && <span className="message-content">{msg.text}</span>}
 
-                                    {/* TypingEffect */}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                    <form onSubmit={sendMessage} className="send-form">
-                        <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Type a message..." required />
-                        <button type="submit">Send</button>
-                    </form>
-                </div>
-            </div>
-
-
-            {/*결과창*/}
-            {modal ? <ChatbotFeedback feedbackData={chatbotFeedback} feedbackAddExplain={chatbotFeedbackExplain} /> : null}
-
+                                            {/* TypingEffect */}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                            <form onSubmit={sendMessage} className="send-form">
+                                <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Type a message..." required />
+                                <button type="submit">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                    </CardBody>
+                    </Card>
+            </Container>
         </>
-
     )
 }

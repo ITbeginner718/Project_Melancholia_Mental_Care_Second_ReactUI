@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 // reactstrap components
-import { Alert, Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, Spinner, } from "reactstrap";
+import { Alert, Badge, Button, Card, CardBody, CardHeader, Col, Container, ListGroup, ListGroupItem, Row, Spinner, } from "reactstrap";
 
 // core components
 import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파일
@@ -14,6 +14,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { SelectedValue } from "./Diagnose_BDI";
 import useDidMountEffect from "@components/hooks/useDidMountEffect";
 import axios from "axios";
+import Result_DBI_Modal from "./Result_DBI_Modal";
 
 interface DBIResultContent
 {
@@ -73,9 +74,9 @@ export default function Result_Diagnose_BDI() {
     
     //gpt 프롬프트(BDI 검사 결과)
     
-    //const PROMPT_TEXT_System ="당신은 심리 상담사 역할을 하고 있으며, {한 명의 내담자에게} 우울증 진단 결과를 온화하고 이해하기 쉽게 설명하는 역할을 맡고 있습니다. 내담자가 벡 우울 척도(BDI) 검사 결과를 가지고 왔고, 이를 바탕으로 진단을 내려야 합니다. 상담사는 전문적인 진단 용어를 사용하면서도 내담자가 부담을 느끼지 않도록 부드러운 말투를 사용합니다. 진단 내용은 우울증의 정서적, 인지적, 동기적, 신체적 측면을 다루며, 그에 맞는 심리 치료 방안을 안내합니다.";
+    const PROMPT_TEXT_System ="당신은 심리 상담사 역할을 하고 있으며, {한 명의 내담자에게} 우울증 진단 결과를 온화하고 이해하기 쉽게 설명하는 역할을 맡고 있습니다. 내담자가 벡 우울 척도(BDI) 검사 결과를 가지고 왔고, 이를 바탕으로 진단을 내려야 합니다. 상담사는 전문적인 진단 용어를 사용하면서도 내담자가 부담을 느끼지 않도록 부드러운 말투를 사용합니다. 진단 내용은 우울증의 정서적, 인지적, 동기적, 신체적 측면을 다루며, 그에 맞는 심리 치료 방안을 안내합니다.";
 
-    const PROMPT_TEXT_System ="안녕";
+    // const PROMPT_TEXT_System ="안녕";
 
     //페이지 이동
     const navigate = useNavigate();
@@ -143,6 +144,7 @@ export default function Result_Diagnose_BDI() {
     // gpt api 호출
     const DBI_resultGPTAPI = async () => {
 
+        console.log("gpt 호출");
         if (DBI_surveyDataParsing) {
             // 키값 지정 
             const apiKey = import.meta.env.VITE_REACT_APP_OPENAI_API_KEY;
@@ -163,11 +165,11 @@ export default function Result_Diagnose_BDI() {
                             // 프롬프트(역할) 지정 
                             { role: 'system', content: PROMPT_TEXT_System },
                             // 일기 데이터
-                            { role: 'user', content: "안녕하세요." },
+                            { role: 'user', content: DBI_surveyData },
                         ],
-                        // 답변 토큰 지정, 제한 (10토큰이상으로 오는 답변 짤리는 것)
-                        //max_tokens: 16384  , //대략 5글자 
-                        max_tokens: 20,
+                        // 답변 토큰 지정, 제한 (10토큰 이상으로 오는 답변 짤리는 것)
+                        max_tokens: 16384  , //대략 5글자 
+                        // max_tokens: 5,
                         temperature: 0.5, //창의적인 대답의 정도(0.0~1.0)
                     },
 
@@ -223,6 +225,7 @@ export default function Result_Diagnose_BDI() {
         console.log("Object_DBI_resultValuesContent 파싱");
 
         if (DBI_surveyData) {
+            console.log(DBI_surveyData);
             // 데이터 파싱
             const DBI_surveyDataParsing = DBI_surveyData.split('@');
 
@@ -242,7 +245,7 @@ export default function Result_Diagnose_BDI() {
 
 
             //gpt api 호출
-            DBI_resultGPTAPI();
+            //DBI_resultGPTAPI();
         }
 
     },[DBI_surveyData])
@@ -458,7 +461,8 @@ export default function Result_Diagnose_BDI() {
                                     <CardHeader className="bg-white border-0">
                                         <Row className="align-items-center">
                                             <Col xs="8">
-                                                <h3 className="mb-0">BDI 검사(2차) 결과</h3>
+                                                <h3 className="mb-0">BDI 검사(2차) 결과</h3> 
+                                                {DBI_resultGPTAPIValue !== undefined && <Result_DBI_Modal gptResult={DBI_resultGPTAPIValue}/>}
                                             </Col>
                                             <Col className="text-right" xs="4">
                                                
@@ -470,70 +474,123 @@ export default function Result_Diagnose_BDI() {
                                         <>
                                         {isLoading?
                                         <>
-                                          <div>
-                                            {  `DBI_resultScore: ${DBI_resultScore}`}
+                                        {/* 점수 결과 */}
+                                        <div>
+                                        
+                                        <Alert color="primary">
+                                            {  `DBI_진단검사 결과: ${DBI_resultScore}`} 
+                                        </Alert>
                                         </div>
+                                        <ListGroup>
                                      {DBI_surveyDataParsing.map((data)=>{
                                         return (
                                         <>
                                         <div>
-                                            {`${data.category}, ${data.name}, ${data.level}, ${data.content}`}
+                                        <ListGroupItem>
+                                        {`${data.category}: ${data.name} - ${data.level} - ${data.content}`}
+                                        </ListGroupItem>
                                         </div>
                                         </>
                                         )
                                      })}
+                                     </ListGroup>
 
 
                                      <br/>
-
+                                     <Badge color="success" tag="h1">
+                                        인지적 증상
+                                    </Badge>
+                                     <ListGroup>
                                      {DBI_SymptomsCognitiveDataParsing.map((data)=>{
                                         return (
                                         <>
                                         <div>
-                                            {`${data.category}, ${data.name}, ${data.level}`}
+                                
+                                        <ListGroupItem className="justify-content-between">
+                                            {data.name} {" "}
+                                            level:
+                                            <Badge color="warning" tag="h1">
+                                            {data.level}
+                                            </Badge>
+                                        </ListGroupItem>
+  
                                         </div>
                                         </>
                                         )
                                      })}
+                                     </ListGroup>
                                       <br/>
-
                                     
-                                      {DBI_SymptomsEmotionalDataParsing.map((data)=>{
+                                      <Badge color="success" tag="h1">
+                                        정서적 증상
+                                    </Badge>
+                                     <ListGroup>
+                                     {DBI_SymptomsEmotionalDataParsing.map((data)=>{
                                         return (
                                         <>
                                         <div>
-                                            {`${data.category}, ${data.name}, ${data.level}`}
+                                
+                                        <ListGroupItem className="justify-content-between">
+                                            {data.name} {" "}
+                                            level:
+                                            <Badge color="warning" tag="h1">
+                                            {data.level}
+                                            </Badge>
+                                        </ListGroupItem>
+  
                                         </div>
                                         </>
                                         )
                                      })}
+                                     </ListGroup>
                                       <br/>
                                       
+                                      <Badge color="success" tag="h1">
+                                        동기적 증상
+                                    </Badge>
+                                     <ListGroup>
                                      {DBI_SymptomsMotivationalDataParsing.map((data)=>{
                                         return (
                                         <>
                                         <div>
-                                            {`${data.category}, ${data.name}, ${data.level}`}
+                                
+                                        <ListGroupItem className="justify-content-between">
+                                            {data.name} {" "}
+                                            level:
+                                            <Badge color="warning" tag="h1">
+                                            {data.level}
+                                            </Badge>
+                                        </ListGroupItem>
+  
                                         </div>
                                         </>
                                         )
                                      })}
+                                     </ListGroup>
                                       <br/>
-                                      
+                                      <Badge color="success" tag="h1">
+                                        신체적 증상
+                                    </Badge>
+                                     <ListGroup>
                                      {DBI_SymptomsPhysicalDataParsing.map((data)=>{
                                         return (
                                         <>
                                         <div>
-                                            {`${data.category}, ${data.name}, ${data.level}`}
+                                
+                                        <ListGroupItem className="justify-content-between">
+                                            {data.name} {" "}
+                                            level:
+                                            <Badge color="warning" tag="h1">
+                                            {data.level}
+                                            </Badge>
+                                        </ListGroupItem>
+  
                                         </div>
                                         </>
                                         )
                                      })}
+                                     </ListGroup>
 
-                                     <div>
-                                        진단 결과: 
-                                        {DBI_resultGPTAPIValue}
-                                     </div>
                                       <br/>
                                         </>
                                         :
@@ -551,9 +608,7 @@ export default function Result_Diagnose_BDI() {
                                       </div>
                                         </>}
                                       
-                                        </>
-                                     
-
+                                        </>                 
                                     </CardBody>
                                
                                 </Card>

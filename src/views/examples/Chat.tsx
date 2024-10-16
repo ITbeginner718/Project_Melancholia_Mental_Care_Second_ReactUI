@@ -24,8 +24,7 @@ import { Button, Card, CardBody, CardHeader, Col, Container, Row } from "reactst
 // 윗쪽 
 import Header from "@components/Headers/Header";
 import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파일
-import Chatbot from "@components/ChatBot/chatbot";
-import chatbotImage from "../../assets/img/theme/GraidentAiRobot.jpg";
+import ChatbotMain from "@components/ChatBot/chatbotMain";
 
 const Chat = () => {
   //페이지 이동 시 
@@ -71,7 +70,7 @@ const Chat = () => {
 
               <CardBody>
                 {/* 챗봇 컴포넌트 */}
-                <Chatbot />
+                <ChatbotMain/>
               </CardBody>
             </Card>
       </Container>

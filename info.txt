@@ -1,5 +1,6 @@
 Vite 설치 방법 
 
+npm init vite
 ======================================================
 
 javascript+ typescript 혼용 방법 
