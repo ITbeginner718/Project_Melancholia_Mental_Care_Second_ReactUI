@@ -104,7 +104,7 @@ const save_update_DSM5Result = async () => {
                             <h3 className="mb-0">
                                 <span>DSM-5 검사: </span>
                                 <Button color="danger" outline >
-                                {isDiagnoseResult==null?<>아직 검사 안함</>:null}
+                                {isDiagnoseResult==null?<>아직 DSM-5 검사를 진행하지 않았습니다. 검사를 진행해주세요.</>:null}
                                 {isDiagnoseResult==true?<>우울증 진단 조건에 부합함</>:null}
                                 {isDiagnoseResult==false?<>우울증 진단 조건에 부합하지 않음</>:null}
                                 </Button>

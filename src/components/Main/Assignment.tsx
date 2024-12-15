@@ -1,27 +1,71 @@
+import { auth, db } from "@/firebase";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, CardHeader, Row, Table } from "reactstrap";
+import AssignmentModal from "./AssignmentModal";
 
-// const articleBlogs = [
-//   {
-//     src: 'https://m.post.naver.com/viewer/postView.naver?volumeNo=36349264&memberNo=2170614',
-//     caption: '나도 내 감정을 모르겠다면',
-//     category: 'blog',
-//   },
-//   {
-//     src: 'https://m.health.chosun.com/svc/news_view.html?contid=2018022002428',
-//     caption: '우울증 환자 80%는 혼자 해결하려다 병키워… 우울증은 치료하면 좋아지는 병입니다',
-//     category: 'article',
-//   },
-//   {
-//     src: 'https://youtu.be/v75sWnEU-yk?feature=shared',
-//     caption: '남을 사랑하는 것보다 중요한 나를 사랑하기 알고리즘이 만들어주는 세상에서 흐릿해지는 나',
-//     category: 'youtube',
-//   },
-
-// ];
+//인터페이스 작성 
+export interface ICounselAssignment {
+  counselingDate: string;
+  Credential: number;
+  conuselingFeedback: string; //feedback
+  counselingSummary: string; //Summary
+  Id: string;
+}
 
 export default function ArticleBlog() {
+
+  const user = auth.currentUser;
+
+  // 배열 설정
+  const [counselAssignments, setCounselAssignments] = useState<ICounselAssignment[]>([]);
+
+  const [modal, setModal] = useState(false);
+  const toggle = () => 
+    {
+      setModal(!modal);
+    }
+
+  const [feedback, setFeedback]=useState("");
+  const [summary, setSummary]=useState("");
+
+  const activateModal =(feedback:string, summary:string)=>{
+    
+    setFeedback(feedback);
+    setSummary(summary);
+
+    // 모달 창 실행
+    toggle();
+  }
+
+  const fetchCounselAssignmentList = async () => {
+    // 상담 기록 데이터 불러오기
+    const counselQuery = query(collection(db, "counseling"), where("userId", "==", user?.uid), orderBy("Credential", "desc"),);
+
+    const querySnapshot = await getDocs(counselQuery);
+
+    // 값 배열에 저장
+    const counselAssignments = querySnapshot.docs.map((document) => {
+
+      const { counselingDate, Credential, conuselingFeedback, counselingSummary } = document.data();
+
+      return {
+        counselingDate, Credential, conuselingFeedback, counselingSummary, Id: document.id,
+      };
+    })
+
+    setCounselAssignments(counselAssignments);
+
+  }
+
+  useEffect(() => {
+    // 데이터 불러오기
+    fetchCounselAssignmentList();
+  }, [])
+
   return (
+    <>          
     <Card className="shadow">
       <CardHeader className="border-0">
         <Row className="align-items-center">
@@ -44,26 +88,30 @@ export default function ArticleBlog() {
 
         <thead className="thead-light">
           <tr>
-            <th scope="col">title</th>
-            <th scope="col">category</th>
+            <th scope="col">Credential</th>
+            <th scope="col">Date</th>
             <th scope="col" />
           </tr>
         </thead>
 
         <tbody>
-          {/* {articleBlogs.map((aricleBlog, index) => (
+          {counselAssignments && counselAssignments.map((counselAssignment, index) => (
             <>
               <tr key={index}>
-                <Link to={aricleBlog.src} target="_blank">
-                  <td>{aricleBlog.caption.length > 20 ? `${aricleBlog.caption.substring(0, 20)}...` : aricleBlog.caption}</td>
-                </Link>
-                <td>{aricleBlog.category}</td>
+                <td onClick={()=> {
+                  activateModal(counselAssignment.conuselingFeedback, counselAssignment.counselingSummary);
+                }}>  <Link to={""}> {counselAssignment.Credential} </Link> </td>
+                <td>{counselAssignment.counselingDate}</td>
+                <td />
               </tr>
             </>
-          ))} */}
+          ))}
         </tbody>
-
       </Table>
     </Card>
+
+    {/* 리스트 안에 모달 창을 넣으면 리스트 갯수 만큼 모달 창이 렌더링되며 이상한 데이터가 작동됨*/}
+    {modal && <AssignmentModal  feedback={feedback} summary={summary} onActionClick={toggle}/> }
+    </>
   )
 }

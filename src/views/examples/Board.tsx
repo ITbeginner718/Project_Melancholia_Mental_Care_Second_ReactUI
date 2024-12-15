@@ -266,7 +266,7 @@ const Tables = () => {
                                         </Label>
                                         <Input
                                             rows={10}
-                                            maxLength={180}
+                                            maxLength={2000}
                                             onChange={onChange}
                                             value={tweet}
                                             id="exampleText"

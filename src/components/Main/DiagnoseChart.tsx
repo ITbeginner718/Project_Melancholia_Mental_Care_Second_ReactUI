@@ -34,27 +34,28 @@ export default function DiagnoseChart() {
         // 사용자가 작성한 tweet만 보여주기
         const fetchDiagnoses = async () => {
             const diagnoseQuery = query(
-                collection(db, "diagnoses"),
-                where("userID", "==", user?.uid),
+                collection(db, "diagnoseBDIresult"),
+                where("userId", "==", user?.uid),
+                // 내림차순
                 orderBy("Credential", "desc"),
                 limit(6),
             );
 
             // 스냅샷
             unsubscribe = await onSnapshot(diagnoseQuery, (snapshot) => {
-                const resultScores:any[]=[];
-                const diagnoseDates:any[]=[]; 
+                const DBI_ResultScore:any[]=[];
+                const DBI_diagnoseDates:any[]=[]; 
 
                 snapshot.docs.map((document) => {
-                    const { resultScore, diagnoseDate } = document.data();
+                    const { DBI_Result, diagnoseDate } = document.data();
 
-                    const resultScore_int = parseInt(resultScore);      
+                    const resultScore_int = parseInt(DBI_Result);      
 
-                    resultScores.push(resultScore_int); 
-                    diagnoseDates.push(diagnoseDate);   
+                    DBI_ResultScore.push(resultScore_int); 
+                    DBI_diagnoseDates.push(diagnoseDate);   
                 });
-                setResultScore(resultScores);
-                setDiagnoseDate(diagnoseDates);    
+                setResultScore(DBI_ResultScore);
+                setDiagnoseDate(DBI_diagnoseDates);    
 
             });
         }

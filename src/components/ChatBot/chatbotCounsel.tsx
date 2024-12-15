@@ -5,12 +5,13 @@ import '../../assets/css/Chat.css'; // 메시지 스타일링을 위한 CSS 파�
 import { io, Socket } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { auth, db } from "../../firebase";
-import { addDoc, collection } from 'firebase/firestore';
-import ChatbotFeedback from './ChatbotFeedback';
+import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
+import ChatbotFeedback from './ChatbotFeedback_Modal';
 import ProfileImageChatbot from "../../assets/img/theme/GraidentAiRobot.jpg";
 import Header from '@components/Headers/Header';
-import { Button, Card, CardBody, CardHeader, Col, Container, Row } from 'reactstrap';
+import { Button, Card, CardBody, CardHeader, Col, Container, Row, Spinner } from 'reactstrap';
 import { useParams } from 'react-router-dom';
+
 
 // 메시지 타입 선언
 type Messages = {
@@ -50,9 +51,8 @@ export default function ChatbotCounsel() {
     const user = auth.currentUser;
 
     // 게시판 정보 id값 가져오기
-    const { keyword } = useParams();
+    const { keyword, counselId } = useParams();
 
-  
     //Socket io 
     const [socket, setSocket] = useState<Socket | null>(null);
     // 현재 입력 필드에 입력된 메세지 필드
@@ -77,22 +77,136 @@ export default function ChatbotCounsel() {
     // 상담 주제 가져오기
     const [topic, setTopic]= useState<string>();
 
-
-   
-
+    // 피드백(gpt) 
+    const [counselFeedback, setCounselFeedback]= useState('');
     
+    // 요약(gpt)
+    const [counselSummary, setCounselSummary]= useState('');
+
+    // 버튼 비/활성화
+    const [isButton, setIsButton]=useState(false);
+
+    // 피드백 및 요약 데이터 로딩
+    const [isFeedbackAndSummaryLoading, setIsFeedbackAndSummary] = useState(false);
+
+    // 과거 상담 키워드 위주의 대화 기록 state
+    const [counselKeywordRecord, setCounselKeywordRecord] = useState<string|null>(null);
+
+    //  소켓 객체 할당 여부 상태
+    const [isActivateSocket, setIsActivateSocket]= useState<boolean>(false);
+
+    // 지난 대화 피드백
+    const [pastFeedback, setPastFeedback]=useState<string>("");
+
+
+    //페이지 이동 시 
+    useEffect(() => {
+        // 페이지를 떠나기 전에 확인 요청
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        const message = "정말 이 페이지를 떠나시겠습니까?";
+        e.returnValue = message; // Chrome에서 필요
+        return message; // 다른 브라우저에서 필요
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // 컴포넌트가 언마운트 될 때 이벤트 리스너 제거
+        return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []); // 빈 의존성 배열을 사용해서 컴포넌트 마운트 시에만 이벤트 리스너를 추가하고, 언마운트 시에 제거
+
+
+    // 상담 주제 저장 및 키워드 가져오기
     useEffect(()=>{
-    if(keyword!=undefined)
+
+        try {
+            if(keyword!=undefined)
+                {
+                    setTopic(decodeURI(decodeURIComponent(keyword)) ) 
+                }
+            
+            console.log("1. 최근 상담 요약본 여부 확인하기");
+             //counselId값이 없으면...
+            
+            if(counselId==="null")
+                {
+
+                    console.log("1-2 요약본 없음");
+                    //대화내역을 불러올 id값이 없으면 활성화
+                    setIsActivateSocket(true);
+                }
+           // counselId값이 있으면
+            else
             {
-                setTopic(decodeURI(decodeURIComponent(keyword)) ) 
+                    console.log("1-1.요약본 있음");
+                    //여기서 부터 시작해야 함
+                    //await로 함수 실행
+                  
+                    getCounselKeywordRecord();
             }
+        } catch (error) {
+            console.log("error:",error);
+        }
     },[])
 
+    //firebase 데이터가 다 들어오면 활성화
+    useEffect(()=>{
+        console.log("counselKeywordRecord",counselKeywordRecord)
+        if(counselKeywordRecord)
+        {
+            setIsActivateSocket(true);
+        }
+    },[counselKeywordRecord])
+
+    
+
+     // 특정 문서 ID를 이용하여 데이터를 가져오는 비동기 함수
+    const  getCounselKeywordRecord = async ()=> {
+        //타입이 string인지 체크
+        if (typeof counselId === "string") {
+          // 'users' 컬렉션에서 특정 문서 ID를 가진 문서에 대한 참조 생성
+          const docRef = doc(db, "counseling", counselId);
+  
+          // 참조를 사용하여 문서 정보 가져오기
+          const docSnap = await getDoc(docRef);
+  
+          // 문서의 존재 여부 확인 및 데이터 출력
+  
+          //해당 쿼리에 대한 모든 문서 반환 
+          if (docSnap.exists()) {
+
+            console.log("데이터 존재");
+            const {counselKeywordRecord, conuselingFeedback}  = docSnap.data();
+            console.log(counselKeywordRecord)
+            setCounselKeywordRecord(counselKeywordRecord);
+            setPastFeedback(conuselingFeedback);
+       
+          }
+        }
+  
+      }
+
+
+    // 먼저 대화 내역을 불러온 후에 할당 시작
     // 컴포넌트가 마운트될 때 한 번만 실행되며, "시작" 메시지를 서버에 보냅니다.
     useEffect(() => {
-        const newSocket = io('http://localhost:4800');
-        setSocket(newSocket);
-    }, []);
+
+  
+        if(isActivateSocket===true)
+        {
+            console.log("2. 소켓 객체 할당하기");
+                // SocketIO 통신 요청
+            const newSocket = io('http://localhost:3002', {
+                reconnection: true, // 재연결 시도 활성화
+                reconnectionAttempts: 5, // 최대 재연결 시도 횟수
+            });
+
+            setSocket(newSocket);
+        }
+
+        
+    }, [isActivateSocket]);
 
 
     // 사용자 이름
@@ -105,21 +219,70 @@ export default function ChatbotCounsel() {
 
     }, []);
 
+    // Callback (챗봇 처음 시작 시)
+    const callBack_setRoomName =( userName:string, topic:string, key:string)=>{
+        console.log( "이름:", userName, "주제:", topic,"대화 키:", key);
+    }
 
+    // Callback (상담 요약 및 피드백 데이터 받기)
+    const callBack_setFeedbackSummary=(feedback:string, summary:string, counselKeywordRecord:string) =>{
+        console.log("feedback:",feedback);
+        console.log("summary:",summary);
+        console.log("counselRecord:", counselKeywordRecord);
+
+        setCounselFeedback(feedback);
+        setCounselSummary(summary);
+
+        setIsButton(true);
+        //Feed Summary 데이터 받았으면 토글 해제
+        setIsFeedbackAndSummary(false);
+    }
+    
+    // Callback (상담 시작(진행) 시작)
+    const callBack_setStartChat_ing =(userName:string, topic:string, key:string)=>
+    {
+        console.log("상담 시작(진행)");
+        console.log("userName:",userName);
+        console.log("topic:",topic);
+        console.log("key:",key);
+    }
+
+    // 메세지 시작
     useEffect(() => {
         // socket 상태가 null이 아닐 때만 실행
         if (socket) {
+
+            // 메시지 수신 사용자 이벤트(receive)
+            socket.on('socket connect',(msg)=>{
+                console.log(msg);
+            });
+            
+            console.log("counselKeywordRecord:", counselKeywordRecord);
+            // AI CBT 시작(처음)
+            if(counselKeywordRecord===null) 
+            {
+                console.log("상담 처음 시작 ");
+                socket.emit('start chat', `인지행동치료시작`, {userName}, {topic}, callBack_setRoomName);
+            }
+
+            else
+            {
+                console.log("상담 이어서 시작....  ");
+                 socket.emit('start chat_ing', `인지행동치료시작_진행`, {userName}, {topic},{counselKeywordRecord},{pastFeedback},callBack_setStartChat_ing );
+            }
+
+
+            // AI CBT 시작(진행)
             console.log("Node.Js Server Connect");
-            // 처음 메시지 전송
-            socket.emit('chat message', `인지행동치료시작 ${userName}`);
         }
 
         if (socket) {
-            // 메시지 수신
-            socket.on('chat message', (msg) => {
+            // 메시지 수신 사용자 이벤트(AI-chat-message)
+            socket.on('AI-chat-message', (msg) => {
 
                 // 진단 검사 결과 데이터
                 const chatFeedbackData = msg;
+                console.log(chatFeedbackData);
 
                 if (chatFeedbackData.indexOf("change") !== -1) {
                     console.log("감성 챗봇 피드백:", chatFeedbackData);
@@ -147,10 +310,13 @@ export default function ChatbotCounsel() {
 
         //  클린업 함수가 실행(이벤트 리스너 해제 및 연결 종료)
         return () => {
+
             if (socket) {
+                // 데이터 삭제
                 console.log("Node.Js Server Disconnect");
                 // 이벤트 리스너 해제
-                socket.off('chat message');
+                socket.off('AI-chat-message');
+                
                 // 실제 소켓 연결을 종료합니다.
                 socket.disconnect();
                 setSocket(null);
@@ -178,7 +344,7 @@ export default function ChatbotCounsel() {
             if (message) {
                 if (socket) {
                     // 메세지 전송
-                    socket.emit('chat message', message);
+                    socket.emit('AI-chat-message', message);
                     setMessages(messages => [...messages, { text: message, type: 'sent' }]);
                     setMessage('');
                 }
@@ -189,6 +355,28 @@ export default function ChatbotCounsel() {
             console.log(e);
         }
     };
+
+    //상담 종료
+    const EndChatCounsel = (e:React.MouseEvent<HTMLButtonElement, MouseEvent>)=>{
+        e.preventDefault();
+        try {
+            const ok = confirm("상담을 종료 하겠습니까?");
+            const userId =user?.uid;
+            if(ok)
+                {
+                    console.log("챗봇 종료");
+                    if (socket) {
+                        socket.emit('end chat',userId, callBack_setFeedbackSummary);
+
+                        //Feedback summary data 로딩
+                        setIsFeedbackAndSummary(true);
+                    }
+                }
+          
+        } catch (error) {
+            console.log("채팅 종료 에러:", error);
+        }
+    }
 
     const savechatFeedbackData = async (chatFeedbackData: string) => {
 
@@ -257,6 +445,7 @@ export default function ChatbotCounsel() {
 
     return (
         <>
+        {/* 헤더 */}
         <Header />
             {/* Page content */}
             <Container className="mt--6" fluid>
@@ -267,17 +456,36 @@ export default function ChatbotCounsel() {
                             <h3 className="mb-0">AI감성 챗봇</h3>
                         </Col>
                         <Col className="text-right" xs="4">
-                            <Button
-                            color="primary"
-                            href="#pablo"
-                            onClick={(e) => e.preventDefault()}
-                            size="sm"
-                            >
-                            Settings
-                            </Button>
+
+                        {isFeedbackAndSummaryLoading === true? 
+                                <Button color="primary" disabled>
+                                <Spinner size="sm">
+                                    Loading...
+                                </Spinner>
+                                <span>
+                                    {' '}Loading
+                                </span>
+                                </Button>
+                                :
+                                <Button
+                                color="primary"
+                                href="#pablo"
+                                onClick={EndChatCounsel}
+                                disabled={isButton}
+                                size="lm"
+                                >
+                                상담 종료
+                                </Button>
+                            }
+
+                           
                         </Col>
                         </Row>
                     </CardHeader>
+
+                    <>
+                    {counselFeedback&& <ChatbotFeedback feedbackData= {counselFeedback} summaryData={counselSummary} /> }
+                    </>
 
                     <CardBody>
 
@@ -312,9 +520,11 @@ export default function ChatbotCounsel() {
                                     </li>
                                 ))}
                             </ul>
-                            <form onSubmit={sendMessage} className="send-form">
-                                <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Type a message..." required />
-                                <button type="submit">Send</button>
+                            <form onSubmit={sendMessage} className="send-form" >
+
+                                <input type="text" value={message} disabled={isButton} onChange={e => setMessage(e.target.value)} placeholder="Type a message..." required />
+                               
+                                <button type="submit" disabled={isButton} >Send</button>
                             </form>
                         </div>
                     </div>

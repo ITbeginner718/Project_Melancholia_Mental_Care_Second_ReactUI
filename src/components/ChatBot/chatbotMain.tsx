@@ -18,10 +18,6 @@ interface DBIResultContentSurvey
     content?: string;
 }
 
-interface ButtonProps {
-    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-    name:string;
-  }
 
   
 
@@ -71,7 +67,18 @@ const  fetchDBIResultMotivationalSymptoms= async () => {
             }
     
             }
+
+const onMovechatbotTopic =(name:string)=>{
     
+    const keyword = encodeURI(encodeURIComponent(name));
+    
+    console.log(keyword);
+   
+    navigate(`/Admin/ChatbotTopic/${keyword}`);
+
+}
+
+
         useEffect(()=>{
             fetchDBIResultMotivationalSymptoms();
         },[])
@@ -100,19 +107,7 @@ const  fetchDBIResultMotivationalSymptoms= async () => {
         },[DBI_Symptoms_Cognitive])
 
 
-        const onMovechatbotCounsel =(name:string)=>{
-            //정말 삭제 할 것인지 사용자 확인 
-            // eslint-disable-next-line no-restricted-globals
-            const ok = confirm(`${name}을 주제로 상담을 진행하겠습니까?`);
-            
-            const keyword = encodeURI(encodeURIComponent(name));
-            
-            console.log(keyword);
-            if(ok)
-            {
-                navigate(`/Admin/ChatbotCounsel/${keyword}`);
-            }
-        }
+        
 
     return (
         <>
@@ -131,7 +126,7 @@ const  fetchDBIResultMotivationalSymptoms= async () => {
                 <CardBody>
                     <Row>
                         {/* AI 챗봇 */}
-                        {DBI_SymptomsCognitiveDataParsing.map((symptomsCognitiveData)=>(
+                        {DBI_SymptomsCognitiveDataParsing && DBI_SymptomsCognitiveDataParsing.map((symptomsCognitiveData)=>(
                             <>
                             <Col sm="6">
                             <Card body>
@@ -143,7 +138,7 @@ const  fetchDBIResultMotivationalSymptoms= async () => {
                         
                                 </CardText>
                                 {/* 무명 함수로 진행 */}
-                                <Button color="primary" onClick={()=>onMovechatbotCounsel(symptomsCognitiveData.name)}>
+                                <Button color="primary" onClick={()=>{onMovechatbotTopic(symptomsCognitiveData.name)}}>
                                     상담 시작
                                 </Button>
                             </Card>

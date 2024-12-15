@@ -50,3 +50,6 @@ vite.confing.ts 설정
       cert: './.cert/cert.pem', 
     },
   },
+
+npm 설치 옵션
+  --save --legacy-peer-deps

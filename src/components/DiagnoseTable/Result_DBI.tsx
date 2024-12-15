@@ -43,7 +43,7 @@ export default function Result_Diagnose_BDI() {
     const user = auth.currentUser;
 
     //데이터 로딩
-    const [isLoading, setIsLoading]= useState(false);
+    const [isLoading, setIsLoading]= useState(true); //다시 변경해줘야함 
 
     //gpt api 결과값 저장
     const [DBI_resultGPTAPIValue,setDBI_resultGPTAPIValue] = useState<string>()
@@ -245,7 +245,7 @@ export default function Result_Diagnose_BDI() {
 
 
             //gpt api 호출
-            //DBI_resultGPTAPI();
+           DBI_resultGPTAPI();
         }
 
     },[DBI_surveyData])

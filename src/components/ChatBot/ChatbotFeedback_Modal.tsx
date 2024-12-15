@@ -5,11 +5,11 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter, CardBody, CardTitle
 //인터페이스 작성 
 export interface IFeedback {
     feedbackData: string;
-    feedbackAddExplain: string;
+    summaryData: string;
 }
 
 
-export default function ChatbotFeedback({ feedbackData, feedbackAddExplain }: IFeedback) {
+export default function ChatbotFeedback({ feedbackData, summaryData }: IFeedback) {
 
     const navigate = useNavigate();
 
@@ -17,7 +17,7 @@ export default function ChatbotFeedback({ feedbackData, feedbackAddExplain }: IF
     const [chatbotFeedback, setChatbotFeedback] = useState('');
 
     // 챗봇 피드백 부가 설명
-    const [chatbotFeedbackAddExplain, setChatbotFeedbackAddExplain] = useState('');
+    const [chatbotSummaryData, setchatbotSummaryData] = useState('');
 
     // 모달 state
     const [modal, setModal] = useState(false);
@@ -29,7 +29,7 @@ export default function ChatbotFeedback({ feedbackData, feedbackAddExplain }: IF
     useEffect(() => {
 
         setChatbotFeedback(feedbackData);
-        setChatbotFeedbackAddExplain(feedbackAddExplain);
+        setchatbotSummaryData(summaryData);
 
         toggle();
     }, []);
@@ -61,26 +61,28 @@ export default function ChatbotFeedback({ feedbackData, feedbackAddExplain }: IF
                             src="https://previews.123rf.com/images/halfpoint/halfpoint1308/halfpoint130800063/21957424-%ED%96%89%EB%B3%B5%ED%95%9C-%EA%B0%80%EC%A1%B1.jpg"
                         />
                         <CardBody>
-                            <CardTitle tag="h5">
+                            <CardTitle tag="h1">
                                 기억하기!
                             </CardTitle>
                             <CardSubtitle
                                 className="mb-2 text-muted"
-                                tag="h6"
+                                tag="h3"
                             >
-                                Feedback
+                                오늘의 상담 피드백
                             </CardSubtitle>
                             <CardText>
                             {chatbotFeedback}
                             </CardText>
-
+                            
+                            <br/>
+                            
                             <CardSubtitle
                                 className="mb-2 text-muted"
-                                tag="h6">
-                                Feedback_AddExplain
+                                tag="h3">
+                                오늘의 상담 주요 내용
                             </CardSubtitle>
                             <CardText>
-                            {chatbotFeedbackAddExplain}
+                            {chatbotSummaryData}
                             </CardText>
                         </CardBody>
                     </Card>

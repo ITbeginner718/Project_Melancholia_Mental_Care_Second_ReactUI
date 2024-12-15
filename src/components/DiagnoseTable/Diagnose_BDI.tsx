@@ -27,7 +27,7 @@ import BDI_list from '../../../diagnose_list/BDI_list.json';
 import RadioGroup from "./DBI_RadioGroup";
 import Radio from "./DBI_Radio";
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { auth,db } from "@/firebase";
+import { auth, db } from "@/firebase";
 import Header from "@components/Headers/Header";
 import { useNavigate } from "react-router-dom";
 
@@ -38,7 +38,7 @@ interface Description {
 }
 
 interface Detail {
-    index:number;
+    index: number;
     name: string;
     description: Description[];
 }
@@ -53,7 +53,7 @@ interface BDI_list {
 }
 
 export interface SelectedValue {
-    index:number;
+    index: number;
     category: string;
     name: string;
     level: number;
@@ -69,7 +69,7 @@ export default function Diagnose_BDI() {
     //선택된 데이터 저장
     const [selectedValues, setSelectedValues] = useState<SelectedValue[]>([]);
 
-    const [DBI_Result, setDBI_Result]= useState(0);
+    const [DBI_Result, setDBI_Result] = useState(0);
 
     //페이지 이동
     const navigate = useNavigate();
@@ -78,25 +78,25 @@ export default function Diagnose_BDI() {
     const date = new Date();
 
     //DBI 결과값 저장(content) ID
-    let DBI_content_id:string;
+    let DBI_content_id: string;
 
     //DBI 결과값 저장(keyword) ID
-    let DBI_keyword_id:string;
+    let DBI_keyword_id: string;
 
 
-    //검사 결과 score
+    //selectedValue가 업데이트 될때마다 level의 합을 구하는 hook
     useEffect(() => {
         const totalLevel = sortedSelectedValues.reduce((sum, value) => sum + value.level, 0);
         setDBI_Result(totalLevel);
-      }, [selectedValues]);
-      
-    //데이터가 선택될 때마다 데이터 정렬
+    }, [selectedValues]);
+
+    //데이터가 선택될 때마다 데이터 정렬(오름 차순 정렬)
     const sortedSelectedValues = useMemo(() => {
         return [...selectedValues].sort((a, b) => a.index - b.index);
     }, [selectedValues]);
 
 
-    //증상별 데이터 정렬
+    //selectedvaluse가 업데이트 될 때마다 증상별(인지, 동기, 정서, 신체)로 데이터 정렬
     const {
         // 감정 
         emotionalSymptoms,
@@ -113,8 +113,7 @@ export default function Diagnose_BDI() {
         const physical: SelectedValue[] = [];
 
         selectedValues.forEach(value => {
-            if(value.level>=1)
-            {
+            if (value.level >= 1) {
                 switch (value.category) {
                     case "정서적 증상":
                         emotional.push(value);
@@ -131,14 +130,13 @@ export default function Diagnose_BDI() {
                 }
             }
 
-            else
-            {
+            else {
                 console.log(`${value.category}, ${value.name}, ${value.content}, ${value.level}`);
             }
-            
+
         });
 
-        // 각 배열 내에서 level 기준으로 정렬
+        // 각 증상 배열 내에서 level 기준으로 정렬(오름차순 정렬)
         const sortByLevel = (a: SelectedValue, b: SelectedValue) => b.level - a.level;
 
         return {
@@ -152,65 +150,70 @@ export default function Diagnose_BDI() {
 
     //DBI 검사 결과(content)
     const packageSelectedValues = useCallback((selectedValues: SelectedValue[]): string => {
-        return selectedValues.map(item => 
+        return selectedValues.map(item =>
             `${item.index}|${item.category}|${item.name}|${item.level}|${item.content}`
         ).join('@');
-        }, []);
+    }, []);
 
-   //DBI 검사 결과 패키징(content)
+    //DBI 검사 결과 패키징(content)
     const DBIResultcontent = useMemo(() => packageSelectedValues(selectedValues), [selectedValues]);
     // const DBIResultcontent = packageSelectedValues(selectedValues);
 
 
-    //=========================================================================증상별 분류(키워드)============================
+    //=========================================================================증상별 분류(키워드) 패키징============================
+    // 각 증상별 배열이 업데이트 될 때마다 패키지 진행
+
     //DBI 검사 결과 정서적 증상(keyword, emotionalSymptoms)
     const packageEmotionalSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
-    return selectedValues.map(item => 
-        `${item.category}|${item.name}|${item.level}`
-    ).join('@');
+        return selectedValues.map(item =>
+            `${item.category}|${item.name}|${item.level}`
+        ).join('@');
     }, []);
 
-   //DBI 검사 결과 정서적 증상 패키징(emotionalSymptoms)
-    const DBIResultEmotionalSymptoms = useMemo(() => packageEmotionalSymptoms(emotionalSymptoms), [emotionalSymptoms]);
+    //DBI 검사 결과 정서적 증상 패키징(emotionalSymptoms)
+    const DBIResultEmotionalSymptoms = useMemo(() =>
+        //  콜백함수 
+        packageEmotionalSymptoms(emotionalSymptoms), [emotionalSymptoms]);
 
 
     //DBI 검사 결과 인지적 증상(keyword, cognitiveSymptoms)
     const packageCognitiveSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
-    return selectedValues.map(item => 
-        `${item.category}|${item.name}|${item.level}`
-    ).join('@');
+        return selectedValues.map(item =>
+            `${item.category}|${item.name}|${item.level}`
+        ).join('@');
     }, []);
 
     //DBI 검사 결과 인지적 증상 패키징(cognitiveSymptoms)
     const DBIResultCognitiveSymptoms = useMemo(() => packageCognitiveSymptoms(cognitiveSymptoms), [cognitiveSymptoms]);
-    
+
 
 
     //DBI 검사 결과 동기적 증상(keyword, motivationalSymptoms)
     const packageMotivationalSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
-        return selectedValues.map(item => 
+        return selectedValues.map(item =>
             `${item.category}|${item.name}|${item.level}`
         ).join('@');
-        }, []);
-    
+    }, []);
+
     //DBI 검사 결과 동기적 증상 패키징(motivationalSymptoms)
     const DBIResultMotivationalSymptoms = useMemo(() => packageMotivationalSymptoms(motivationalSymptoms), [motivationalSymptoms]);
 
 
     //DBI 검사 결과 신체적 증상(keyword, physicalSymptoms)
     const packagePhysicalSymptoms = useCallback((selectedValues: SelectedValue[]): string => {
-        return selectedValues.map(item => 
+        return selectedValues.map(item =>
             `${item.category}|${item.name}|${item.level}`
         ).join('@');
-        }, []);
-    
+    }, []);
+
     //DBI 검사 결과 신체적 증상 패키징(physicalSymptoms)
     const DBIResultPhysicalSymptoms = useMemo(() => packagePhysicalSymptoms(physicalSymptoms), [physicalSymptoms]);
-    
-    
+
+    //========================================================================================================================================
+
     //DBI 검사 결과 저장(설문 내용) 
-    const saveDBI_content= async()=>{
-    
+    const saveDBI_content = async () => {
+
         if (!user) return;
 
         try {
@@ -241,18 +244,16 @@ export default function Diagnose_BDI() {
             console.log(doc);
 
             //content doc id 저장
-            DBI_content_id= doc.id;
+            DBI_content_id = doc.id;
         }
 
         catch (e) {
             console.log("firebase error:", e);
         }
-
-
     }
 
     //DBI 검사 결과 저장(치료 키워드)
-    const saveDBI_treatment= async()=>{
+    const saveDBI_treatment = async () => {
         if (!user) return;
 
         //치료 키워드 갖고 오기
@@ -265,53 +266,52 @@ export default function Diagnose_BDI() {
                 */
             where("userId", "==", user?.uid),
         );
-    
-    
+
+
         const snapshot = await getDocs(tweetQuery);
 
         //DBI 검사 결과가 없으면 새로 데이터 저장
-        if(snapshot.empty)
-        {
+        if (snapshot.empty) {
             try {
                 // 데이터 저장
                 const doc = await addDoc(collection(db, "diagnoseBDIresult_treatment_keyword"), {
-    
-                // 진단 검사 결과 데이터
 
-                // 사용자 ID 
-                userId: user.uid,
+                    // 진단 검사 결과 데이터
 
-                // 게시판 ID
-                Credential: Date.now(),
+                    // 사용자 ID 
+                    userId: user.uid,
 
-                //날짜 
-                diagnoseDate: (date.getFullYear() + "/" +
-                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
-                    ("0" + (date.getDate())).slice(-2) + "-" +
-                    ("0" + (date.getHours())).slice(-2) + ":" +
-                    ("0" + (date.getMinutes())).slice(-2) +
-                    ":" + ("0" + (date.getSeconds())).slice(-2)),
+                    // 게시판 ID
+                    Credential: Date.now(),
 
-                //검사결과 키워드 추출 정서적(EmotionalSymptoms)
-                DBIResultEmotionalSymptoms,
+                    //날짜 
+                    diagnoseDate: (date.getFullYear() + "/" +
+                        ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
+                        ("0" + (date.getDate())).slice(-2) + "-" +
+                        ("0" + (date.getHours())).slice(-2) + ":" +
+                        ("0" + (date.getMinutes())).slice(-2) +
+                        ":" + ("0" + (date.getSeconds())).slice(-2)),
 
-                //검사결과 키워드 추출 인지적(CognitiveSymptoms)
-                DBIResultCognitiveSymptoms,
-                
-                //검사결과 키워드 추출 동기적(MotivationalSymptoms)
-                DBIResultMotivationalSymptoms,
+                    //검사결과 키워드 추출 정서적(EmotionalSymptoms)
+                    DBIResultEmotionalSymptoms,
 
-                //검사결과 키워드 추출 신체적(PhysicalSymptoms)
-                DBIResultPhysicalSymptoms
+                    //검사결과 키워드 추출 인지적(CognitiveSymptoms)
+                    DBIResultCognitiveSymptoms,
+
+                    //검사결과 키워드 추출 동기적(MotivationalSymptoms)
+                    DBIResultMotivationalSymptoms,
+
+                    //검사결과 키워드 추출 신체적(PhysicalSymptoms)
+                    DBIResultPhysicalSymptoms
 
                 });
-    
+
                 console.log("new 데이터 save");
                 //DBI keyworld id 저장
-                DBI_keyword_id= doc.id
-    
+                DBI_keyword_id = doc.id
+
             }
-    
+
             catch (e) {
                 console.log("firebase error:", e);
             }
@@ -320,47 +320,45 @@ export default function Diagnose_BDI() {
         }
 
         //DBI 검사 결과 있으면 업데이트 진행
-        else
-        {
+        else {
 
-            try{
+            try {
                 const doc_id = snapshot.docs[0].id
 
                 //서로 다른 값인 경우 데이터 저장
-                const docRef = doc(db, "diagnoseBDIresult_treatment_keyword",doc_id);
-    
+                const docRef = doc(db, "diagnoseBDIresult_treatment_keyword", doc_id);
+
                 // document 업데이트
                 await updateDoc(docRef, {
-                     //검사결과 키워드 추출 정서적(EmotionalSymptoms)
-                     DBIResultEmotionalSymptoms,
-    
-                     //검사결과 키워드 추출 인지적(CognitiveSymptoms)
-                     DBIResultCognitiveSymptoms,
-                     
-                     //검사결과 키워드 추출 동기적(MotivationalSymptoms)
-                     DBIResultMotivationalSymptoms,
-     
-                     //검사결과 키워드 추출 신체적(PhysicalSymptoms)
-                     DBIResultPhysicalSymptoms,
+                    //검사결과 키워드 추출 정서적(EmotionalSymptoms)
+                    DBIResultEmotionalSymptoms,
 
-                     //날짜 
+                    //검사결과 키워드 추출 인지적(CognitiveSymptoms)
+                    DBIResultCognitiveSymptoms,
+
+                    //검사결과 키워드 추출 동기적(MotivationalSymptoms)
+                    DBIResultMotivationalSymptoms,
+
+                    //검사결과 키워드 추출 신체적(PhysicalSymptoms)
+                    DBIResultPhysicalSymptoms,
+
+                    //날짜 
                     diagnoseDate: (date.getFullYear() + "/" +
-                    ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
-                    ("0" + (date.getDate())).slice(-2) + "-" +
-                    ("0" + (date.getHours())).slice(-2) + ":" +
-                    ("0" + (date.getMinutes())).slice(-2) +
-                    ":" + ("0" + (date.getSeconds())).slice(-2)),
-                    });
-    
-                DBI_keyword_id=doc_id;
+                        ("0" + (date.getMonth() + 1)).slice(-2) + "/" +
+                        ("0" + (date.getDate())).slice(-2) + "-" +
+                        ("0" + (date.getHours())).slice(-2) + ":" +
+                        ("0" + (date.getMinutes())).slice(-2) +
+                        ":" + ("0" + (date.getSeconds())).slice(-2)),
+                });
+
+                DBI_keyword_id = doc_id;
                 console.log("업데이트 진행");
             }
 
-            catch(e)
-            {
+            catch (e) {
                 console.log(e);
             }
-            
+
         }
 
         //페이지 이동(content/keyword)
@@ -371,53 +369,60 @@ export default function Diagnose_BDI() {
     //라디오버튼 클릭시 데이터 저장
     const handleRadioChange = (value: SelectedValue) => {
         setSelectedValues(prev => {
+            // 선택된 값의 name과 같은 데이터를 삭제(같은 name값이 있으면 안됨)
             const newValues = prev.filter(item => item.name !== value.name);
             return [...newValues, value];
         });
     };
 
     //데이터 전송
-     const onClick=(e: React.MouseEvent<HTMLButtonElement, MouseEvent>)=>
-     {
+    const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
         //전부다 체크가 되었는지 확인해야 함
 
-        if(selectedValues.length!==21)
-        {
+        if (selectedValues.length !== 21) {
             alert("모두 체크를 해줘야 합니다.");
         }
 
-        else
-        {
+        else {
             const ok = confirm("결과를 제출하겠습니까?");
-            
-            if(ok)
-            {
+
+            if (ok) {
                 console.log("검사 결과 ================================================");
                 //진단 검사 분류
-                {sortedSelectedValues.forEach((value)=>{
-                    console.log(`${value.category},${value.name}, ${value.content}, ${value.level} `)
-                })}
+                {
+                    sortedSelectedValues.forEach((value) => {
+                        console.log(`${value.category},${value.name}, ${value.content}, ${value.level} `)
+                    })
+                }
 
                 console.log(`총 score:${DBI_Result}`);
-                
+
                 console.log("정서적 증상 ================================================");
-                {emotionalSymptoms.map((value)=>(
-                    console.log(`${value.category},${value.name}, ${value.level} `)
-                ))}
+                {
+                    emotionalSymptoms.map((value) => (
+                        console.log(`${value.category},${value.name}, ${value.level} `)
+                    ))
+                }
                 console.log("인지적 증상 ================================================");
-                {cognitiveSymptoms.map((value)=>(
-                    console.log(`${value.category},${value.name}, ${value.level} `)
-                ))}
+                {
+                    cognitiveSymptoms.map((value) => (
+                        console.log(`${value.category},${value.name}, ${value.level} `)
+                    ))
+                }
                 console.log("동기적 증상 ================================================");
-                {motivationalSymptoms.map((value)=>(
-                    console.log(`${value.category},${value.name}, ${value.level} `)
-                ))}
+                {
+                    motivationalSymptoms.map((value) => (
+                        console.log(`${value.category},${value.name}, ${value.level} `)
+                    ))
+                }
                 console.log("신체적 증상 ================================================");
-                {physicalSymptoms.map((value)=>(
-                    console.log(`${value.category},${value.name}, ${value.level} `)
-                ))}
-                
+                {
+                    physicalSymptoms.map((value) => (
+                        console.log(`${value.category},${value.name}, ${value.level} `)
+                    ))
+                }
+
                 //firebase 설문검사 저장
                 saveDBI_content();
 
@@ -426,8 +431,8 @@ export default function Diagnose_BDI() {
             }
         }
 
-     }
-     
+    }
+
 
     return (
         <>
@@ -517,7 +522,7 @@ export default function Diagnose_BDI() {
                                     <Col xs="8">
                                         <h3 className="mb-0">우울증 진단검사</h3>
                                     </Col>
-                                    <Col className="text-right" xs="4"> 
+                                    <Col className="text-right" xs="4">
                                     </Col>
                                 </Row>
                             </CardHeader>
@@ -544,73 +549,73 @@ export default function Diagnose_BDI() {
 
                                     <CardBody>
 
-                                 
-                    {BDI_Data.symptoms.map((symptom: Symptom) => (
-                            <>
-                            {symptom.details.map((detail: Detail, dIndex: number) => (
-                                <>
-                              <br/>
-                                <div key={dIndex}>
-                                     {/* 세부 증상: 슬픔, 울음, 분노 */}
-                                            <ListGroup numbered>
-                                            <RadioGroup 
-                                                label={detail.name} 
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                                console.log(event.target.value);
-                                                const [index,category, name, level, content] = event.target.value.split('|');
-                                                
-                                                handleRadioChange({
-                                                    index:parseInt(index),
-                                                    category,
-                                                    name,
-                                                    level: parseInt(level),
-                                                    content
-                                                });
 
-                                                }}
-                                            >
-                                                <h1>
-                                                    {`${detail.index}번 째 질문`}
-                                                  </h1>
-                                                {detail.description.map((desc: Description, index: number) => (
-                                                     <ListGroupItem>
-                                               
-                                                    <Radio 
-                                                    category={symptom.category} 
-                                                    name={detail.name} 
-                                                    level={desc.level} 
-                                                    content={desc.content} 
-                                                    index={detail.index}
-                                                    >
-                                                    {desc.content}
-                                                    </Radio>
-                                             
-                                                    </ListGroupItem>
+                                        {BDI_Data.symptoms.map((symptom: Symptom) => (
+                                            <>
+                                                {symptom.details.map((detail: Detail, dIndex: number) => (
+                                                    <>
+                                                        <br />
+                                                        <div key={dIndex}>
+                                                            {/* 세부 증상: 슬픔, 울음, 분노 */}
+                                                            <ListGroup numbered>
+                                                                <RadioGroup
+                                                                    label={detail.name}
+                                                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                                        console.log(event.target.value);
+                                                                        const [index, category, name, level, content] = event.target.value.split('|');
+
+                                                                        handleRadioChange({
+                                                                            index: parseInt(index),
+                                                                            category,
+                                                                            name,
+                                                                            level: parseInt(level),
+                                                                            content
+                                                                        });
+
+                                                                    }}
+                                                                >
+                                                                    <h1>
+                                                                        {`${detail.index}번 째 질문`}
+                                                                    </h1>
+                                                                    {detail.description.map((desc: Description, index: number) => (
+                                                                        <ListGroupItem>
+
+                                                                            <Radio
+                                                                                category={symptom.category}
+                                                                                name={detail.name}
+                                                                                level={desc.level}
+                                                                                content={desc.content}
+                                                                                index={detail.index}
+                                                                            >
+                                                                                {desc.content}
+                                                                            </Radio>
+
+                                                                        </ListGroupItem>
+                                                                    ))}
+                                                                </RadioGroup>
+                                                            </ListGroup>
+
+                                                        </div>
+                                                    </>
                                                 ))}
-                                            </RadioGroup>
-                                            </ListGroup>
-                                            
+                                            </>
+                                        ))}
+                                        <div>
+                                            <br />
+                                            <Button
+                                                color="primary"
+                                                href="#pablo"
+                                                onClick={onClick}
+                                                size="=lm"
+                                            >  DSM-5 검사 결과 버튼 </Button>
                                         </div>
-                                        </>
-                                    ))}
-                               </>
-                            ))}
-                            <div>
-                                <br/>
-                            <Button
-                                    color="primary"
-                                    href="#pablo"
-                                    onClick={onClick}
-                                    size="=lm"
-                                >  DSM-5 검사 결과 버튼 </Button>
-                            </div>
 
 
                                     </CardBody>
-                               
+
                                 </Card>
                             </CardBody>
-                           
+
                         </Card>
                     </Col>
                 </Row>

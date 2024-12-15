@@ -36,6 +36,8 @@ import Result_Diagnose_DSM5 from "@components/DiagnoseTable/Result_DSM5.tsx";
 import Diagnose_BDI from "@components/DiagnoseTable/Diagnose_BDI.tsx";
 import Result_Diagnose_BDI from "@components/DiagnoseTable/Result_DBI.tsx";
 import ChatbotCounsel from "@components/ChatBot/chatbotCounsel.tsx";
+import PsychologicalCounselingDetail from "@components/Main/PsychologicalCounselingDetail.tsx";
+import ChatbotTopic from "@components/ChatBot/ChatbotTopic.tsx";
 
 const routes = [
   {
@@ -156,14 +158,30 @@ const routes = [
     layout: "/admin",
   },
 
+   //챗봇 주제
+   {
+    path: "/ChatbotTopic/:keyword",
+    name: "Anonymous",
+    component: <ChatbotTopic />,
+    layout: "/admin",
+  },
+
   //챗봇 상담
   {
-    path: "/ChatbotCounsel/:keyword",
+    path: "/ChatbotCounsel/:keyword/:counselId",
     name: "Anonymous",
     component: <ChatbotCounsel />,
     layout: "/admin",
   },
   
+  //챗봇 상담 상세
+
+  {
+    path: "/ChatbotCounsel/detail/:counselId",
+    name: "Anonymous",
+    component: <PsychologicalCounselingDetail />,
+    layout: "/admin",
+  },
 
 
   {

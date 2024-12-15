@@ -11,10 +11,7 @@ import {
     DropdownItem,
     UncontrolledDropdown,
     DropdownToggle,
-    Media,
-    Progress,
-    Table,
-    UncontrolledTooltip,
+    Media
 } from "reactstrap";
 
 
